@@ -1,0 +1,32 @@
+===========================================
+Statistical Analysis Functions for TopoBank
+===========================================
+
+Purpose
+-------
+
+This plugin adds the following analysis functions to Topobank:
+
+- Height/Curvature/Slope Distribution
+- Autocorrelation
+- Power Spectrum
+- Roughness Parameters
+- Scale-dependent slope/curvature
+- Variable bandwidth
+
+For more information, see paper ...
+
+Installation
+------------
+
+For production:
+
+`pip install topobank-statistics`
+
+For development:
+
+Clone project, enter project directory and run
+
+`pip install . -e[dev]`
+
+
