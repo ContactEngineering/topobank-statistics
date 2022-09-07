@@ -1,0 +1,26 @@
+# Ubuntu 20.04
+dist: focal
+
+#services:
+#  - xvfb
+language: python
+cache: pip
+addons:
+  postgresql: "13"
+services:
+  - postgresql
+env:
+  global:
+    - USE_DOCKER=no
+    - DJANGO_SETTINGS_MODULE=config.settings.test
+python:
+  - 3.8
+install:
+  - sudo apt-get install libfftw3-dev libopenblas-dev
+  - pip install -e . --no-binary numpy
+script:
+  - pytest -v
+notifications:
+  email:
+    - roettger@tf.uni-freiburg.de
+    # - lars.pastewka@imtek.uni-freiburg.de
