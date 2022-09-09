@@ -37,4 +37,4 @@ class StatisticsPluginConfig(PluginConfig):
         # noinspection PyUnresolvedReferences
         import topobank_statistics.downloads
 
-default_app_config = "topobank_statistics.StatisticsPluginConfig"
+# default_app_config = "topobank_statistics.StatisticsPluginConfig"
