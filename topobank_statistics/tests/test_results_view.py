@@ -16,7 +16,7 @@ from ..views import RoughnessParametersCardView, NUM_SIGNIFICANT_DIGITS_RMS_VALU
 
 @pytest.mark.parametrize('file_format', ['txt', 'xlsx'])
 @pytest.mark.django_db
-def test_roughness_params_download_as_txt(client, two_topos, file_format, handle_usage_statistics):
+def test_roughness_params_download_as_txt(client, two_topos, file_format, handle_usage_statistics, rf):
     # This is only a simple test which checks whether the file can be downloaded
     t1, t2 = two_topos
 
@@ -33,15 +33,18 @@ def test_roughness_params_download_as_txt(client, two_topos, file_format, handle
 
     assert client.login(username=username, password=password)
 
-    ids_downloadable_analyses = [ana1.id, ana2.id]
+    # ids_downloadable_analyses = [ana1.id, ana2.id]
 
-    ids_str = ",".join(str(i) for i in ids_downloadable_analyses)
-    download_url = reverse('analysis:download',
-                           kwargs=dict(ids=ids_str,
-                                       art='roughness parameters',
-                                       file_format=file_format))
+    import topobank_statistics.downloads
 
-    response = client.get(download_url)
+    request = rf.get('analysis/download')  # path does not matter here
+
+    download_funcs = {
+        'txt': topobank_statistics.downloads.download_roughness_parameters_to_txt,
+        'xlsx': topobank_statistics.downloads.download_roughness_parameters_to_xlsx,
+    }
+
+    response = download_funcs[file_format](request, [ana1, ana2])
 
     if file_format == 'txt':
         txt = response.content.decode()
@@ -73,6 +76,7 @@ def test_roughness_params_download_as_txt(client, two_topos, file_format, handle
         xlsx.get_sheet_by_name("INFORMATION")
 
 
+@pytest.mark.urls('topobank_statistics.tests.urls')
 @pytest.mark.parametrize('template_flavor', ['list', 'detail'])
 @pytest.mark.django_db
 def test_roughness_params_rounded(rf, mocker, template_flavor):
@@ -147,13 +151,75 @@ def test_roughness_params_rounded(rf, mocker, template_flavor):
     card_view = card_view_class.as_view()
     response = card_view(request)
     assert response.status_code == 200
-    assert response.template_name == [f'statistical_analysis/roughnessparameters_card_{template_flavor}.html']
+    assert response.template_name == [f'topobank_statistics/roughnessparameters_card_{template_flavor}.html']
 
-    response.render()
     # we want rounding to 5 digits
     assert NUM_SIGNIFICANT_DIGITS_RMS_VALUES == 5
-    assert b"1.2346" in response.content
-    assert b"8.7654" in response.content
-    assert b"0.9" in response.content
-    assert b"-1.5679" in response.content
-    assert b"NaN" in response.content
+
+    topo_url = topo.get_absolute_url()
+
+    exp_table_data = [
+        {
+            'quantity': 'RMS Height',
+            'direction': '',
+            'from': 'area (2D)',
+            'symbol': 'Sq',
+            'value': 1.2346,
+            'unit': 'm',
+            'topography_name': topo.name,
+            'topography_url': topo_url
+        },
+        {
+            'quantity': 'RMS Height',
+            'direction': 'x',
+            'from': 'profile (1D)',
+            'symbol': 'Rq',
+            'value': 8.7654,
+            'unit': 'm',
+            'topography_name': topo.name,
+            'topography_url': topo_url
+        },
+        {
+            'quantity': 'RMS Curvature',
+            'direction': '',
+            'from': 'profile (1D)',
+            'symbol': '',
+            'value': 0.9,
+            'unit': '1/m',
+            'topography_name': topo.name,
+            'topography_url': topo_url
+        },
+        {
+            'quantity': 'RMS Slope',
+            'direction': 'x',
+            'from': 'profile (1D)',
+            'symbol': 'S&Delta;q',
+            'value': -1.5679,
+            'unit': 1,
+            'topography_name': topo.name,
+            'topography_url': topo_url
+        },
+        {
+            'quantity': 'RMS Slope',
+            'direction': 'y',
+            'from': 'profile (1D)',
+            'symbol': 'S&Delta;q',
+            'value': None,
+            'unit': 1,
+            'topography_name': topo.name,
+            'topography_url': topo_url
+        }
+    ]
+
+    assert response.context_data['table_data'] == exp_table_data
+
+    #
+    # We do not render response here, because this causes problems
+    # when resolving static files from topobank package
+    #
+    # response.render()
+    # assert b"1.2346" in response.content
+    # assert b"8.7654" in response.content
+    # assert b"0.9" in response.content
+    # assert b"-1.5679" in response.content
+    # assert b"NaN" in response.content

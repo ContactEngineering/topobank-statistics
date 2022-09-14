@@ -1,11 +1,12 @@
 import math
 
 from topobank.analysis.utils import round_to_significant_digits
-from topobank.analysis.views import SimpleCardView, NUM_SIGNIFICANT_DIGITS_RMS_VALUES
+from topobank.analysis.views import SimpleCardView
 from topobank.analysis.registry import register_card_view_class
 
 from .functions import ART_ROUGHNESS_PARAMETERS
 
+NUM_SIGNIFICANT_DIGITS_RMS_VALUES = 5
 
 @register_card_view_class(ART_ROUGHNESS_PARAMETERS)
 class RoughnessParametersCardView(SimpleCardView):
@@ -54,7 +55,7 @@ class RoughnessParametersCardView(SimpleCardView):
             data.extend(analysis_result)
 
         #
-        # find out all existing keys keeping order
+        # find out all existing keys while keeping order
         #
         all_keys = []
         for d in data:

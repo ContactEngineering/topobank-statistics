@@ -1,7 +1,13 @@
 """
 Place here all download function and register with @register_download_function
 """
+import io
+
+import pandas as pd
+from django.http import HttpResponse
+
 from topobank.analysis.registry import register_download_function
+from topobank.analysis.downloads import publications_urls, analyses_meta_data_dataframe, analysis_header_for_txt_file
 
 from .functions import ART_ROUGHNESS_PARAMETERS
 
@@ -31,7 +37,7 @@ def download_roughness_parameters_to_txt(request, analyses):
     analyses = [a for a in analyses if a.is_topography_related]
 
     # Collect publication links, if any
-    publication_urls = _publications_urls(request, analyses)
+    publication_urls = publications_urls(request, analyses)
 
     # Pack analysis results into a single text file.
     data = []
@@ -116,7 +122,7 @@ def download_roughness_parameters_to_xlsx(request, analyses):
                                                'from', 'symbol', 'value', 'unit'])
     roughness_df.replace(r'&Delta;', 'Δ', inplace=True, regex=True)  # we want a real greek delta
     roughness_df.to_excel(excel, sheet_name="Roughness parameters", index=False)
-    info_df = _analyses_meta_data_dataframe(analyses, request)
+    info_df = analyses_meta_data_dataframe(analyses, request)
     info_df.to_excel(excel, sheet_name='INFORMATION', index=False)
     excel.close()
 
