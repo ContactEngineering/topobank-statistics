@@ -17,7 +17,15 @@ python:
   - 3.8
 install:
   - sudo apt-get install libfftw3-dev libopenblas-dev
-  - pip install -e . --no-binary numpy
+  - pushd /tmp
+  - git clone git@github.com:ContactEngineering/TopoBank.git
+  - cd topobank
+  - git checkout 22_analysis_plugins
+  - pip install -q -r requirements/local.txt --no-binary numpy
+  - pip install -e .[dev]
+  - python manage.py collectstatic
+  - popd
+  - pip install -e .[dev] --no-binary numpy
 script:
   - pytest -v
 notifications:
