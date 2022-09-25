@@ -30,6 +30,7 @@ class StatisticsPluginConfig(PluginConfig):
     def ready(self):
         # make sure the functions are registered now
         # TODO can this be done with signals?
+
         # noinspection PyUnresolvedReferences
         import topobank_statistics.functions
         # noinspection PyUnresolvedReferences
