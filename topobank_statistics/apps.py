@@ -25,7 +25,7 @@ class StatisticsPluginConfig(PluginConfig):
         - Scale-dependent slope/curvature
         - Variable bandwidth
         """
-        picture = "topobank_statistics/static/images/logo.svg"
+        logo = "topobank_statistics/static/images/ce_logo.svg"
         compatibility = "topobank>=0.92.0"
 
     def ready(self):
