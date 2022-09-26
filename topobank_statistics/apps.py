@@ -6,6 +6,7 @@ try:
 except ImportError:
     raise RuntimeError("Please use topobank 0.92.0 or above to use this plugin!")
 
+
 class StatisticsPluginConfig(PluginConfig):
     default = True
     default_auto_field = 'django.db.models.BigAutoField'

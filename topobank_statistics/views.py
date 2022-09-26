@@ -8,6 +8,7 @@ from .functions import ART_ROUGHNESS_PARAMETERS
 
 NUM_SIGNIFICANT_DIGITS_RMS_VALUES = 5
 
+
 @register_card_view_class(ART_ROUGHNESS_PARAMETERS)
 class RoughnessParametersCardView(SimpleCardView):
 

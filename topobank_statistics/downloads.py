@@ -11,6 +11,7 @@ from topobank.analysis.downloads import publications_urls, analyses_meta_data_da
 
 from .functions import ART_ROUGHNESS_PARAMETERS
 
+
 @register_download_function(ART_ROUGHNESS_PARAMETERS, 'results', 'txt')
 def download_roughness_parameters_to_txt(request, analyses):
     """Download roughness parameters from given analyses as CSV file.
