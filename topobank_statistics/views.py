@@ -1,5 +1,7 @@
 import math
 
+from django.views.generic import TemplateView
+
 from topobank.analysis.utils import round_to_significant_digits
 from topobank.analysis.views import SimpleCardView
 from topobank.analysis.registry import register_card_view_class
@@ -78,4 +80,14 @@ class RoughnessParametersCardView(SimpleCardView):
             table_data=data
         ))
 
+        return context
+
+
+class ExampleView(TemplateView):
+    template_name = "topobank_statistics/example.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from .apps import __version__ as version
+        context['plugin_version'] = version
         return context
