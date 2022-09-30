@@ -81,7 +81,7 @@ def test_roughness_params_download_as_txt(client, two_topos, file_format, handle
 @pytest.mark.django_db
 def test_roughness_params_rounded(rf, mocker, template_flavor):
 
-    def myfunc(*args, **kwargs):
+    def myfunc(topography, *args, **kwargs):
         """Return some fake values for testing rounding"""
         return [
             {
