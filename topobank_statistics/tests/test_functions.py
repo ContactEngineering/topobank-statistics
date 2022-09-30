@@ -7,16 +7,10 @@ from numpy.testing import assert_allclose
 from SurfaceTopography import Topography, NonuniformLineScan
 
 from topobank.analysis.models import AnalysisFunction
-import topobank.analysis.functions
-from topobank.analysis.functions import (
-    IncompatibleTopographyException)
-from topobank.contact_analysis.functions import contact_mechanics
+from topobank.analysis.functions import IncompatibleTopographyException
 from topobank_statistics.functions import height_distribution, slope_distribution, curvature_distribution, \
     power_spectrum, power_spectrum_for_surface, autocorrelation, autocorrelation_for_surface, variable_bandwidth, \
     variable_bandwidth_for_surface, scale_dependent_slope, scale_dependent_slope_for_surface, roughness_parameters
-
-from topobank.manager.tests.utils import SurfaceFactory, Topography1DFactory
-
 
 EXPECTED_KEYS_FOR_DIST_ANALYSIS = sorted(['name', 'scalars', 'xlabel', 'ylabel', 'xunit', 'yunit', 'series'])
 EXPECTED_KEYS_FOR_PLOT_CARD_ANALYSIS = sorted(['alerts', 'name',
@@ -739,32 +733,6 @@ def test_scale_dependent_slope_for_surface(simple_surface):
     assert expected_result['series'][0]['name'] == result['series'][0]['name']
     assert_allclose(expected_result['series'][0]['x'], result['series'][0]['x'], atol=1e-6)
     assert_allclose(expected_result['series'][0]['y'], result['series'][0]['y'], atol=1e-6)
-
-
-@pytest.mark.parametrize(["x_dim", "y_dim"], [[20000, 10000], [9999999, 3]])
-def test_exception_topography_too_large_for_contact_mechanics(x_dim, y_dim, mocker, simple_linear_2d_topography):
-    topo = FakeTopographyModel(simple_linear_2d_topography)
-
-    # patch raw topography in order to return a higher number of grid points
-    m = mocker.patch("SurfaceTopography.Topography.nb_grid_pts", new_callable=mocker.PropertyMock)
-    m.return_value = (x_dim, y_dim)  # this make the topography returning high numbers of grid points
-
-    with pytest.raises(IncompatibleTopographyException):
-        contact_mechanics(topo, storage_prefix='test')
-
-
-@pytest.mark.parametrize(["topo_is_periodic", "substrate_str", "exp_num_alerts"], [
-    [False, 'nonperiodic', 0],
-    [False, 'periodic', 1],
-    [True, 'nonperiodic', 1],
-    [True, 'periodic', 0],
-])
-def test_alert_if_topographys_periodicity_does_not_match(simple_linear_2d_topography,
-                                                         topo_is_periodic, substrate_str, exp_num_alerts):
-    topo = FakeTopographyModel(simple_linear_2d_topography, is_periodic=topo_is_periodic)
-    result = contact_mechanics(topo, substrate_str=substrate_str, storage_prefix='test',
-                               progress_recorder=DummyProgressRecorder())  # TODO take other function
-    assert len(result['alerts']) == exp_num_alerts
 
 
 @pytest.mark.django_db
