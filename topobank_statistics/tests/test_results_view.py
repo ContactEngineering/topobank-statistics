@@ -9,10 +9,12 @@ import openpyxl
 from topobank.manager.utils import subjects_to_json
 from topobank.manager.tests.utils import two_topos
 from topobank.analysis.models import AnalysisFunction
-from topobank.analysis.tests.utils import TopographyAnalysisFactory, Topography2DFactory
+from topobank.analysis.tests.utils import TopographyAnalysisFactory, Topography2DFactory, SurfaceFactory
 from topobank.analysis.registry import AnalysisRegistry
+from topobank.organizations.tests.utils import OrganizationFactory
 
 from ..views import RoughnessParametersCardView, NUM_SIGNIFICANT_DIGITS_RMS_VALUES
+
 
 @pytest.mark.parametrize('file_format', ['txt', 'xlsx'])
 @pytest.mark.django_db
@@ -79,7 +81,7 @@ def test_roughness_params_download_as_txt(client, two_topos, file_format, handle
 @pytest.mark.urls('topobank_statistics.tests.urls')
 @pytest.mark.parametrize('template_flavor', ['list', 'detail'])
 @pytest.mark.django_db
-def test_roughness_params_rounded(rf, mocker, template_flavor):
+def test_roughness_params_rounded(rf, mocker, template_flavor, user_with_plugin):
 
     def myfunc(topography, *args, **kwargs):
         """Return some fake values for testing rounding"""
@@ -129,7 +131,8 @@ def test_roughness_params_rounded(rf, mocker, template_flavor):
     m = mocker.patch('topobank.analysis.registry.AnalysisFunctionImplementation.python_function')
     m.return_value = myfunc
 
-    topo = Topography2DFactory(size_x=1, size_y=1)
+    surf = SurfaceFactory(creator=user_with_plugin)
+    topo = Topography2DFactory(size_x=1, size_y=1, surface=surf)
 
     func = AnalysisFunction.objects.get(name='Roughness parameters')
     TopographyAnalysisFactory(subject=topo, function=func)
