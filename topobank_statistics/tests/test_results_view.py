@@ -45,7 +45,13 @@ def test_roughness_params_download_as_txt(client, two_topos, file_format, handle
         'txt': topobank_statistics.downloads.download_roughness_parameters_to_txt,
         'xlsx': topobank_statistics.downloads.download_roughness_parameters_to_xlsx,
     }
-
+    #
+    # This test uses and tests the download function directly without
+    # calling the general "download" route from the topobank.analysis package
+    # Therefore now check is done whether the user is allowed to use the function
+    # and therefore it is not needed here that the user belongs to an organization
+    # which has access to the plugin function.
+    #
     response = download_funcs[file_format](request, [ana1, ana2])
 
     if file_format == 'txt':
