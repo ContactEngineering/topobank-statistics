@@ -1,6 +1,6 @@
 # Changelog for plugin *topobank-statistics*
 
-## 0.92.0 (no published yet)
+## 0.92.0 (2022-10-14)
 
 This is the initial version of the plugin, based on
 the code and the functionality of the statistical
