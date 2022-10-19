@@ -27,6 +27,6 @@ For development:
 
 Clone project, enter project directory and run
 
-`pip install . -e[dev]`
+`pip install -e .[dev]`
 
 
