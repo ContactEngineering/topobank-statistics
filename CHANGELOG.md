@@ -1,5 +1,9 @@
 # Changelog for plugin *topobank-statistics*
 
+## 0.92.1 (not published yet)
+
+- BUG: Fixed wrong template names
+
 ## 0.92.0 (2022-10-14)
 
 This is the initial version of the plugin, based on
