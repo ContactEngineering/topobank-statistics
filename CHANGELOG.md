@@ -3,6 +3,8 @@
 ## 0.92.1 (not published yet)
 
 - BUG: Fixed wrong template names
+- MAINT: In roughness parameters downloads, renamed
+  column "surface" to "digital surface twin" (#890)
 
 ## 0.92.0 (2022-10-14)
 
