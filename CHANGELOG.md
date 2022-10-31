@@ -2,6 +2,8 @@
 
 ## 0.92.1 (not published yet)
 
+- ENH: Made Tasks button more prominent as in
+  main application
 - BUG: Fixed wrong template names
 - MAINT: In roughness parameters downloads, renamed
   column "surface" to "digital surface twin" (#890)
