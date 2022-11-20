@@ -158,10 +158,6 @@ def slope_distribution(topography, bins=None, wfac=5, progress_recorder=None, st
     # Get low level topography from SurfaceTopography model
     topography = topography.topography()
 
-    if topography.is_reentrant:
-        raise ReentrantTopographyException(
-            'Slope distribution: Cannot calculate analysis function for reentrant measurements.')
-
     if bins is None:
         bins = reasonable_bins_argument(topography)
 
@@ -234,10 +230,6 @@ def slope_distribution(topography, bins=None, wfac=5, progress_recorder=None, st
 def curvature_distribution(topography, bins=None, wfac=5, progress_recorder=None, storage_prefix=None):
     # Get low level topography from SurfaceTopography model
     topography = topography.topography()
-
-    if topography.is_reentrant:
-        raise ReentrantTopographyException(
-            'Curvature distribution: Cannot calculate analysis function for reentrant measurements.')
 
     if bins is None:
         bins = reasonable_bins_argument(topography)
@@ -417,10 +409,6 @@ def scale_dependent_roughness_parameter(topography, progress_recorder, order_of_
 
     series = []
     alerts = []
-
-    if topography.is_reentrant:
-        raise ReentrantTopographyException(
-            '{}: Cannot calculate analysis function for reentrant measurements.'.format(name))
 
     if topography.dim == 2:
         nb_analyses = 6  # x-direction, y-direction, xy-direction (reliable + unreliable)
@@ -765,10 +753,6 @@ def _analysis_function(topography, funcname_profile, funcname_area, name, xlabel
 
     # Switch to low level topography from SurfaceTopography model
     topography = topography.topography()
-
-    if topography.is_reentrant:
-        raise ReentrantTopographyException(
-            '{}: Cannot calculate analysis function for reentrant measurements.'.format(name))
 
     alerts = []  # list of dicts with keys 'alert_class', 'message'
     series = []  # list of dicts with series data, keys: 'name', 'x', 'y', 'visible'
