@@ -2,10 +2,10 @@ import numpy as np
 from SurfaceTopography.Container.Averaging import log_average
 from SurfaceTopography.Container.ScaleDependentStatistics import scale_dependent_statistical_property
 from SurfaceTopography.Container.common import suggest_length_unit
-from SurfaceTopography.Exceptions import CannotPerformAnalysisError
+from SurfaceTopography.Exceptions import CannotPerformAnalysisError, ReentrantDataError
 
 from topobank.analysis.functions import reasonable_bins_argument, wrap_series, \
-    ReentrantTopographyException, make_alert_entry, ContainerProxy, ART_SERIES
+    make_alert_entry, ContainerProxy, ART_SERIES
 from topobank.analysis.registry import register_implementation
 
 
@@ -124,7 +124,7 @@ def _moments_histogram_gaussian(arr, bins, topography, wfac, quantity, label, un
         # https://github.com/ContactEngineering/SurfaceTopography/issues/108 is implemented.
         if (len(exc.args) > 0) and \
             ((exc.args[0] == 'supplied range of [0.0, inf] is not finite') or ('is reentrant' in exc.args[0])):
-            raise ReentrantTopographyException("Cannot calculate curvature distribution for reentrant measurements.")
+            raise ReentrantDataError("Cannot calculate curvature distribution for reentrant measurements.")
         raise
 
     scalars = {
@@ -258,7 +258,7 @@ def curvature_distribution(topography, bins=None, wfac=5, progress_recorder=None
         # https://github.com/ContactEngineering/SurfaceTopography/issues/108 is implemented.
         if (len(exc.args) > 0) and \
             ((exc.args[0] == 'supplied range of [-inf, inf] is not finite') or ('is reentrant' in exc.args[0])):
-            raise ReentrantTopographyException("Cannot calculate curvature distribution for reentrant measurements.")
+            raise ReentrantDataError("Cannot calculate curvature distribution for reentrant measurements.")
         raise
 
     minval = mean_curv - wfac * rms_curv
