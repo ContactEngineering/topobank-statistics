@@ -470,7 +470,7 @@ def test_roughness_parameters(simple_linear_2d_topography):
             'symbol': 'Rq',
             'value': 5.74456264,
             'unit': unit,
-            'value (SI)': pint.convert(5.74456264, unit, 'm'),
+            'value (SI)': ureg.convert(5.74456264, unit, 'm'),
             'unit (SI)': 'm'
         },
         {
@@ -480,7 +480,7 @@ def test_roughness_parameters(simple_linear_2d_topography):
             'symbol': 'Sq',
             'value': np.sqrt(33),
             'unit': unit,
-            'value (SI)': pint.convert(np.sqrt(33), unit, 'm'),
+            'value (SI)': ureg.convert(np.sqrt(33), unit, 'm'),
             'unit (SI)': 'm'
         },
         {
