@@ -2,10 +2,10 @@ import numpy as np
 from SurfaceTopography.Container.Averaging import log_average
 from SurfaceTopography.Container.ScaleDependentStatistics import scale_dependent_statistical_property
 from SurfaceTopography.Container.common import suggest_length_unit
-from SurfaceTopography.Exceptions import CannotPerformAnalysisError
+from SurfaceTopography.Exceptions import CannotPerformAnalysisError, ReentrantDataError
 
 from topobank.analysis.functions import reasonable_bins_argument, wrap_series, \
-    ReentrantTopographyException, make_alert_entry, ContainerProxy, ART_SERIES
+    make_alert_entry, ContainerProxy, ART_SERIES
 from topobank.analysis.registry import register_implementation
 
 
@@ -124,7 +124,7 @@ def _moments_histogram_gaussian(arr, bins, topography, wfac, quantity, label, un
         # https://github.com/ContactEngineering/SurfaceTopography/issues/108 is implemented.
         if (len(exc.args) > 0) and \
             ((exc.args[0] == 'supplied range of [0.0, inf] is not finite') or ('is reentrant' in exc.args[0])):
-            raise ReentrantTopographyException("Cannot calculate curvature distribution for reentrant measurements.")
+            raise ReentrantDataError("Cannot calculate curvature distribution for reentrant measurements.")
         raise
 
     scalars = {
@@ -157,10 +157,6 @@ def slope_distribution(topography, bins=None, wfac=5, progress_recorder=None, st
     """Calculates slope distribution for given topography."""
     # Get low level topography from SurfaceTopography model
     topography = topography.topography()
-
-    if topography.is_reentrant:
-        raise ReentrantTopographyException(
-            'Slope distribution: Cannot calculate analysis function for reentrant measurements.')
 
     if bins is None:
         bins = reasonable_bins_argument(topography)
@@ -235,10 +231,6 @@ def curvature_distribution(topography, bins=None, wfac=5, progress_recorder=None
     # Get low level topography from SurfaceTopography model
     topography = topography.topography()
 
-    if topography.is_reentrant:
-        raise ReentrantTopographyException(
-            'Curvature distribution: Cannot calculate analysis function for reentrant measurements.')
-
     if bins is None:
         bins = reasonable_bins_argument(topography)
 
@@ -266,7 +258,7 @@ def curvature_distribution(topography, bins=None, wfac=5, progress_recorder=None
         # https://github.com/ContactEngineering/SurfaceTopography/issues/108 is implemented.
         if (len(exc.args) > 0) and \
             ((exc.args[0] == 'supplied range of [-inf, inf] is not finite') or ('is reentrant' in exc.args[0])):
-            raise ReentrantTopographyException("Cannot calculate curvature distribution for reentrant measurements.")
+            raise ReentrantDataError("Cannot calculate curvature distribution for reentrant measurements.")
         raise
 
     minval = mean_curv - wfac * rms_curv
@@ -417,10 +409,6 @@ def scale_dependent_roughness_parameter(topography, progress_recorder, order_of_
 
     series = []
     alerts = []
-
-    if topography.is_reentrant:
-        raise ReentrantTopographyException(
-            '{}: Cannot calculate analysis function for reentrant measurements.'.format(name))
 
     if topography.dim == 2:
         nb_analyses = 6  # x-direction, y-direction, xy-direction (reliable + unreliable)
@@ -765,10 +753,6 @@ def _analysis_function(topography, funcname_profile, funcname_area, name, xlabel
 
     # Switch to low level topography from SurfaceTopography model
     topography = topography.topography()
-
-    if topography.is_reentrant:
-        raise ReentrantTopographyException(
-            '{}: Cannot calculate analysis function for reentrant measurements.'.format(name))
 
     alerts = []  # list of dicts with keys 'alert_class', 'message'
     series = []  # list of dicts with series data, keys: 'name', 'x', 'y', 'visible'

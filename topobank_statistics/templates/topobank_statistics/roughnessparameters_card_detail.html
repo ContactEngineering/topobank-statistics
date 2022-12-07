@@ -32,7 +32,7 @@
         <div class="tab-pane show active" id="table" role="tabpanel" aria-labelledby="card-tab">
           {% include 'analysis/analyses_alerts.html' %}
           {% if analyses_success %}
-             {% include 'statistical_analysis/roughnessparameters_card_datatables.html' %}
+             {% include 'topobank_statistics/roughnessparameters_card_datatables.html' %}
           {% endif %}
         </div>
         {% include 'analysis/analyses_warnings_tab_pane.html' %}
@@ -58,8 +58,8 @@
                 {% fa5_icon 'download' %} Download XLSX</a>
             {% endif %}
             {% if not analyses_unready %}
-              <a class="btn btn-default btn-block btn-lg" href="#" data-toggle="modal"
-                 data-target="#statusesModal-{{ card_id }}">{% fa5_icon 'tasks' %} Task information</a>
+              <a class="btn btn-primary btn-block btn-lg" href="#" data-toggle="modal"
+                 data-target="#statusesModal-{{ card_id }}">{% fa5_icon 'tasks' %} Tasks</a>
             {% endif %}
           {% endif %}
         </div>

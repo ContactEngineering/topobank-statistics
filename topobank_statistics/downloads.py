@@ -72,7 +72,7 @@ def download_roughness_parameters_to_txt(request, analyses):
                          row['unit']])
 
     f.write('# Table of roughness parameters\n')
-    df = pd.DataFrame(data, columns=['surface', 'measurement', 'quantity', 'direction',
+    df = pd.DataFrame(data, columns=['digital surface twin', 'measurement', 'quantity', 'direction',
                                      'from', 'symbol', 'value', 'unit'])
     df.to_csv(f, index=False)
     f.write('\n')
@@ -115,11 +115,11 @@ def download_roughness_parameters_to_xlsx(request, analyses):
     for analysis in analyses:
         topo = analysis.subject
         for row in analysis.result:
-            row['surface'] = topo.surface.name
+            row['digital surface twin'] = topo.surface.name
             row['measurement'] = topo.name
             data.append(row)
 
-    roughness_df = pd.DataFrame(data, columns=['surface', 'measurement', 'quantity', 'direction',
+    roughness_df = pd.DataFrame(data, columns=['digital surface twin', 'measurement', 'quantity', 'direction',
                                                'from', 'symbol', 'value', 'unit'])
     roughness_df.replace(r'&Delta;', 'Δ', inplace=True, regex=True)  # we want a real greek delta
     roughness_df.to_excel(excel, sheet_name="Roughness parameters", index=False)

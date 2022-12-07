@@ -26,7 +26,7 @@ class StatisticsPluginConfig(PluginConfig):
         - Variable bandwidth
         """
         logo = "topobank_statistics/static/images/ce_logo.svg"
-        compatibility = "topobank>=0.92.0"
+        # compatibility = "topobank>=0.92.0"
 
     def ready(self):
         # make sure the functions are registered now
