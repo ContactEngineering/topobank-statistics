@@ -4,7 +4,9 @@ Place here all download function and register with @register_download_function
 import io
 
 import pandas as pd
+import pint
 from django.http import HttpResponse
+from pint import UnitRegistry
 
 from topobank.analysis.registry import register_download_function
 from topobank.analysis.downloads import publications_urls, analyses_meta_data_dataframe, analysis_header_for_txt_file
@@ -40,6 +42,10 @@ def download_roughness_parameters_to_txt(request, analyses):
     # Collect publication links, if any
     publication_urls = publications_urls(request, analyses)
 
+    # Unit conversion
+    ureg = pint.UnitRegistry()
+    ureg.default_format = '~P'
+
     # Pack analysis results into a single text file.
     data = []
     f = io.StringIO()
@@ -62,6 +68,8 @@ def download_roughness_parameters_to_txt(request, analyses):
         result = analysis.result
         topography = analysis.subject
         for row in result:
+            v = ureg.Quantity(row['value'], row['unit'])
+            v_si = v.to_base_units()  # Convert to SI units
             data.append([topography.surface.name,
                          topography.name,
                          row['quantity'],
@@ -69,11 +77,13 @@ def download_roughness_parameters_to_txt(request, analyses):
                          row['from'] if row['from'] else '',
                          row['symbol'] if row['symbol'] else '',
                          row['value'],
-                         row['unit']])
+                         row['unit'],
+                         v_si.magnitude,
+                         str(v_si.units)])
 
     f.write('# Table of roughness parameters\n')
     df = pd.DataFrame(data, columns=['digital surface twin', 'measurement', 'quantity', 'direction',
-                                     'from', 'symbol', 'value', 'unit'])
+                                     'from', 'symbol', 'value', 'unit', 'value (SI)', 'unit (SI)'])
     df.to_csv(f, index=False)
     f.write('\n')
 
