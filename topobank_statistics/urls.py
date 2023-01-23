@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 
 from .views import ExampleView
 
-app_name = "statistics"
+app_name = 'topobank_statistics'
 urlpatterns = [
     # Define extra urls here
     path(
