@@ -1,5 +1,5 @@
-import pkg_resources
-__version__ = pkg_resources.require("topobank-statistics")[0].version
+from importlib.metadata import version
+__version__ = version("topobank-statistics")
 
 try:
     from topobank.plugins import PluginConfig
