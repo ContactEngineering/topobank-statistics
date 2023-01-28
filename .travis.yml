@@ -19,6 +19,7 @@ install:
   - pushd /tmp
   - git clone https://github.com/ContactEngineering/topobank.git
   - cd topobank
+  - git checkout 23_tweaks1
   - pip install -q -r requirements/local.txt
   - pip install -e .[dev]
   - USE_DOCKER=no python manage.py collectstatic
