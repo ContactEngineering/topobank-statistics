@@ -42,9 +42,8 @@ jobs:
       run: |
         pip install --upgrade pip
         pushd /tmp
-        git clone https://github.com/ContactEngineering/topobank.git
+        git clone --branch 23_tweaks2 https://github.com/ContactEngineering/topobank.git
         cd topobank
-        git checkout 23_tweaks2
         pip install -q -r requirements/local.txt
         pip install -e .[dev]
         USE_DOCKER=no python manage.py collectstatic
