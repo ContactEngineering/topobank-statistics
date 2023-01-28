@@ -16,12 +16,9 @@ env:
 python:
   - 3.8
 install:
-  - sudo apt-get install libfftw3-dev libopenblas-dev
   - pushd /tmp
-  - git clone https://github.com/ContactEngineering/TopoBank.git
-  # - git clone git@github.com:ContactEngineering/TopoBank.git
-  - cd TopoBank
-  - git checkout 22_analysis_plugins
+  - git clone https://github.com/ContactEngineering/topobank.git
+  - cd topobank
   - pip install -q -r requirements/local.txt
   - pip install -e .[dev]
   - USE_DOCKER=no python manage.py collectstatic
