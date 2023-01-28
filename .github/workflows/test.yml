@@ -20,8 +20,8 @@ jobs:
         image: postgres
 
     env:
-      - USE_DOCKER=no
-      - DJANGO_SETTINGS_MODULE=config.settings.test
+      USE_DOCKER: no
+      DJANGO_SETTINGS_MODULE: config.settings.test
 
     steps:
     - uses: actions/checkout@v3
