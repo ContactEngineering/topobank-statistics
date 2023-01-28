@@ -18,10 +18,17 @@ jobs:
     services:
       postgres:
         image: postgres
+      env:
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
+        POSTGRES_DB: topobank-test
+      ports:
+        - 5432:5432
 
     env:
       USE_DOCKER: no
       DJANGO_SETTINGS_MODULE: config.settings.test
+      DATABASE_URL: postgres://localhost
 
     strategy:
       matrix:
