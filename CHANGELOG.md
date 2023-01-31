@@ -1,6 +1,6 @@
 # Changelog for plugin *topobank-statistics*
 
-## 0.92.2 (not yet released)
+## 1.0.0 (2023-01-31)
 
 - MAINT: Version discovery from VCS
 
