@@ -1,5 +1,9 @@
 # Changelog for plugin *topobank-statistics*
 
+## 0.92.2 (not yet released)
+
+- MAINT: Version discovery from VCS
+
 ## 0.92.1 (2022-12-07)
 
 - ENH: Made Tasks button more prominent as in
