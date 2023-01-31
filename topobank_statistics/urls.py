@@ -3,7 +3,10 @@ from django.contrib.auth.decorators import login_required
 
 from .views import ExampleView
 
-app_name = 'topobank_statistics'
+# App name determines the internal name space, e.g. example can be references
+# as 'statistics:example'
+app_name = 'statistics'
+
 urlpatterns = [
     # Define extra urls here
     path(
