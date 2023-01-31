@@ -49,7 +49,7 @@ jobs:
       run: |
         pip install --upgrade pip
         pushd /tmp
-        git clone --branch 23_tweaks2 https://github.com/ContactEngineering/topobank.git
+        git clone --branch develop https://github.com/ContactEngineering/topobank.git
         cd topobank
         pip install -q -r requirements/local.txt
         pip install -e .[dev]
