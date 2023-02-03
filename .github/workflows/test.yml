@@ -50,9 +50,10 @@ jobs:
         pip install --upgrade pip pip-tools
         pushd /tmp
         git clone --branch develop https://github.com/ContactEngineering/topobank.git
-        pip-compile --extra dev pyproject.toml topobank/pyproject.toml
+        popd
+        pip-compile --extra dev pyproject.toml /tmp/topobank/pyproject.toml
         pip install -r requirements.txt
-        cd topobank
+        pushd /tmp/topobank
         USE_DOCKER=no python manage.py collectstatic
         popd
         pip install -e .[dev]
