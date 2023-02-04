@@ -59,4 +59,4 @@ jobs:
         pip install -e .[dev]
 
     - name: Test
-      run: pytest -v
+      run: PYTHONPATH=/tmp/topobank pytest -v
