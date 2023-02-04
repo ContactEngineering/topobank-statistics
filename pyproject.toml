@@ -7,7 +7,7 @@ name = 'topobank-statistics'
 description = 'This is a plugin for "topobank" for statistical analysis of measurements and digital surface twins.'
 requires-python = '>=3.8.0'
 dynamic = ['version']
-readme = 'README'
+readme = 'README.rst'
 license = { file = 'LICENSE' }
 authors = [
     { name = "Michael Röttger", email = "info@michael-roettger.de" },

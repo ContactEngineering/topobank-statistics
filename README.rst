@@ -1,4 +1,3 @@
-===========================================
 Statistical Analysis Functions for TopoBank
 ===========================================
 
@@ -14,19 +13,24 @@ This plugin adds the following analysis functions to Topobank:
 - Scale-dependent slope/curvature
 - Variable bandwidth
 
-For more information, see paper ...
+For more information, see our `paper`_.
 
 Installation
 ------------
 
 For production:
 
-`pip install topobank-statistics`
+.. code-block:: bash
+
+    pip install topobank-statistics
 
 For development:
 
 Clone project, enter project directory and run
 
-`pip install -e .[dev]`
+.. code-block:: bash
 
+    pip install -e .[dev]
+
+.. _paper: https://doi.org/10.1088/2051-672X/ac860a
 
