@@ -47,15 +47,16 @@ jobs:
 
     - name: Install
       run: |
-        pip install --upgrade pip
+        pip install --upgrade pip pip-tools
         pushd /tmp
         git clone --branch develop https://github.com/ContactEngineering/topobank.git
-        cd topobank
-        pip install -q -r requirements/local.txt
-        pip install -e .[dev]
+        popd
+        pip-compile --extra dev pyproject.toml /tmp/topobank/pyproject.toml
+        pip install -r requirements.txt
+        pushd /tmp/topobank
         USE_DOCKER=no python manage.py collectstatic
         popd
         pip install -e .[dev]
 
     - name: Test
-      run: pytest -v
+      run: PYTHONPATH=/tmp/topobank pytest -v
