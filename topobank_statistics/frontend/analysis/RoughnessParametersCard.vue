@@ -3,15 +3,15 @@
 import {v4 as uuid4} from 'uuid';
 import DataTable from 'datatables.net-vue3'
 
-import BibliographyModal from 'BibliographyModal.vue';
-import TasksButton from 'TasksButton.vue';
+import BibliographyModal from 'topobank/analysis/BibliographyModal.vue';
+import TasksButton from 'topobank/analysis/TasksButton.vue';
 
 export default {
   name: 'series-card',
   components: {
     BibliographyModal,
-    BokehPlot,
-    DataTable
+    DataTable,
+    TasksButton
   },
   props: {
     apiUrl: String,
