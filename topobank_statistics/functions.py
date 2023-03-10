@@ -9,7 +9,7 @@ from topobank.analysis.functions import reasonable_bins_argument, wrap_series, \
 from topobank.analysis.registry import register_implementation
 
 
-ART_ROUGHNESS_PARAMETERS = "roughness parameters"
+ART_ROUGHNESS_PARAMETERS = "roughness_parameters"
 
 GAUSSIAN_FIT_SERIES_NAME = 'Gaussian fit'
 
