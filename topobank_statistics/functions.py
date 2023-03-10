@@ -5,16 +5,15 @@ from SurfaceTopography.Container.common import suggest_length_unit
 from SurfaceTopography.Exceptions import CannotPerformAnalysisError, ReentrantDataError
 
 from topobank.analysis.functions import reasonable_bins_argument, wrap_series, \
-    make_alert_entry, ContainerProxy, ART_SERIES
+    make_alert_entry, ContainerProxy, VIZ_SERIES
 from topobank.analysis.registry import register_implementation
 
-
-ART_ROUGHNESS_PARAMETERS = "roughness_parameters"
+VIZ_ROUGHNESS_PARAMETERS = "roughness_parameters"
 
 GAUSSIAN_FIT_SERIES_NAME = 'Gaussian fit'
 
 
-@register_implementation(art=ART_SERIES, name="Height distribution")
+@register_implementation("analysis", VIZ_SERIES, "Height distribution")
 def height_distribution(topography, bins=None, wfac=5, progress_recorder=None, storage_prefix=None):
     # Get low level topography from SurfaceTopography model
     topography = topography.topography()
@@ -40,18 +39,18 @@ def height_distribution(topography, bins=None, wfac=5, progress_recorder=None, s
         unit = None
 
     series = [
-        dict(name='Height distribution',
+        dict('Height distribution',
              x=(bin_edges[:-1] + bin_edges[1:]) / 2,
              y=hist,
              ),
-        dict(name=GAUSSIAN_FIT_SERIES_NAME,
+        dict(GAUSSIAN_FIT_SERIES_NAME,
              x=x_gauss,
              y=y_gauss,
              )
     ]
 
     return dict(
-        name='Height distribution',
+        'Height distribution',
         scalars={
             'Mean Height': dict(value=mean_height, unit=unit),
             'RMS Height': dict(value=rms_height, unit=unit),
@@ -133,7 +132,7 @@ def _moments_histogram_gaussian(arr, bins, topography, wfac, quantity, label, un
     }
 
     series = [
-        dict(name=f'{quantity.capitalize()} distribution ({label})',
+        dict(f'{quantity.capitalize()} distribution ({label})',
              x=(bin_edges[:-1] + bin_edges[1:]) / 2,
              y=hist)]
 
@@ -144,7 +143,7 @@ def _moments_histogram_gaussian(arr, bins, topography, wfac, quantity, label, un
         y_gauss = np.exp(-(x_gauss - mean) ** 2 / (2 * rms ** 2)) / (np.sqrt(2 * np.pi) * rms)
 
         series.append(
-            dict(name=GAUSSIAN_FIT_SERIES_NAME + f' ({label})',
+            dict(GAUSSIAN_FIT_SERIES_NAME + f' ({label})',
                  x=x_gauss,
                  y=y_gauss)
         )
@@ -152,7 +151,7 @@ def _moments_histogram_gaussian(arr, bins, topography, wfac, quantity, label, un
     return scalars, series
 
 
-@register_implementation(art=ART_SERIES, name="Slope distribution")
+@register_implementation("analysis", VIZ_SERIES, "Slope distribution")
 def slope_distribution(topography, bins=None, wfac=5, progress_recorder=None, storage_prefix=None):
     """Calculates slope distribution for given topography."""
     # Get low level topography from SurfaceTopography model
@@ -216,7 +215,7 @@ def slope_distribution(topography, bins=None, wfac=5, progress_recorder=None, st
         raise ValueError("This analysis function can only handle 1D or 2D topographies.")
 
     return dict(
-        name='Slope distribution',
+        'Slope distribution',
         xlabel='Slope',
         ylabel='Probability density',
         xunit='1',
@@ -226,7 +225,7 @@ def slope_distribution(topography, bins=None, wfac=5, progress_recorder=None, st
     )
 
 
-@register_implementation(art=ART_SERIES, name="Curvature distribution")
+@register_implementation("analysis", VIZ_SERIES, "Curvature distribution")
 def curvature_distribution(topography, bins=None, wfac=5, progress_recorder=None, storage_prefix=None):
     # Get low level topography from SurfaceTopography model
     topography = topography.topography()
@@ -270,18 +269,18 @@ def curvature_distribution(topography, bins=None, wfac=5, progress_recorder=None
     inverse_unit = '{}⁻¹'.format(unit)
 
     series = [
-        dict(name='Curvature distribution',
+        dict('Curvature distribution',
              x=(bin_edges[:-1] + bin_edges[1:]) / 2,
              y=hist,
              ),
-        dict(name=GAUSSIAN_FIT_SERIES_NAME,
+        dict(GAUSSIAN_FIT_SERIES_NAME,
              x=x_gauss,
              y=y_gauss,
              )
     ]
 
     return dict(
-        name='Curvature distribution',
+        'Curvature distribution',
         scalars={
             'Mean Curvature': dict(value=mean_curv, unit=inverse_unit),
             'RMS Curvature': dict(value=rms_curv, unit=inverse_unit),
@@ -294,7 +293,7 @@ def curvature_distribution(topography, bins=None, wfac=5, progress_recorder=None
     )
 
 
-@register_implementation(art=ART_SERIES, name="Power spectrum")
+@register_implementation("analysis", VIZ_SERIES, "Power spectrum")
 def power_spectrum(topography, progress_recorder=None, storage_prefix=None, window=None,
                    nb_points_per_decade=10):
     """Calculate Power Spectrum for given topography."""
@@ -317,7 +316,7 @@ def power_spectrum(topography, progress_recorder=None, storage_prefix=None, wind
                               storage_prefix=storage_prefix)
 
 
-@register_implementation(art=ART_SERIES, name="Power spectrum")
+@register_implementation("analysis", VIZ_SERIES, "Power spectrum")
 def power_spectrum_for_surface(surface, progress_recorder=None, storage_prefix=None, window=None,
                                nb_points_per_decade=10):
     """Calculate Power Spectrum for given topography."""
@@ -337,7 +336,7 @@ def power_spectrum_for_surface(surface, progress_recorder=None, storage_prefix=N
                                           storage_prefix=storage_prefix)
 
 
-@register_implementation(art=ART_SERIES, name="Autocorrelation")
+@register_implementation("analysis", VIZ_SERIES, "Autocorrelation")
 def autocorrelation(topography, progress_recorder=None, storage_prefix=None, nb_points_per_decade=10):
     return _analysis_function(topography,
                              'autocorrelation_from_profile',
@@ -354,7 +353,7 @@ def autocorrelation(topography, progress_recorder=None, storage_prefix=None, nb_
                               storage_prefix=storage_prefix)
 
 
-@register_implementation(art=ART_SERIES, name="Autocorrelation")
+@register_implementation("analysis", VIZ_SERIES, "Autocorrelation")
 def autocorrelation_for_surface(surface, progress_recorder=None, storage_prefix=None, nb_points_per_decade=10):
     return _analysis_function_for_surface(surface,
                                           progress_recorder,
@@ -369,7 +368,7 @@ def autocorrelation_for_surface(surface, progress_recorder=None, storage_prefix=
                                           storage_prefix=storage_prefix)
 
 
-@register_implementation(art=ART_SERIES, name="Variable bandwidth")
+@register_implementation("analysis", VIZ_SERIES, "Variable bandwidth")
 def variable_bandwidth(topography, progress_recorder=None, storage_prefix=None):
     return _analysis_function(topography,
                              'variable_bandwidth_from_profile',
@@ -385,7 +384,7 @@ def variable_bandwidth(topography, progress_recorder=None, storage_prefix=None):
                               storage_prefix=storage_prefix)
 
 
-@register_implementation(art=ART_SERIES, name="Variable bandwidth")
+@register_implementation("analysis", VIZ_SERIES, "Variable bandwidth")
 def variable_bandwidth_for_surface(surface, progress_recorder=None, storage_prefix=None, nb_points_per_decade=10):
     return _analysis_function_for_surface(surface,
                                           progress_recorder,
@@ -437,7 +436,7 @@ def scale_dependent_roughness_parameter(topography, progress_recorder, order_of_
         nonlocal series, progress_offset
         try:
             distances, rms_values_sq = topography.scale_dependent_statistical_property(**func_kwargs)
-            series += [dict(name=series_name,
+            series += [dict(series_name,
                             x=distances,
                             y=np.sqrt(rms_values_sq),
                             visible=is_reliable_visible)]
@@ -446,7 +445,7 @@ def scale_dependent_roughness_parameter(topography, progress_recorder, order_of_
         progress_offset += 1
 
         distances, rms_values_sq = topography.scale_dependent_statistical_property(reliable=False, **func_kwargs)
-        series += [dict(name=series_name + ' (incl. unreliable data)',
+        series += [dict(series_name + ' (incl. unreliable data)',
                         x=distances,
                         y=np.sqrt(rms_values_sq),
                         visible=False),
@@ -474,7 +473,7 @@ def scale_dependent_roughness_parameter(topography, progress_recorder, order_of_
 
     unit = topography.unit
     return dict(
-        name=name,
+        name,
         xlabel='Distance',
         ylabel=ylabel,
         xunit=unit,
@@ -500,7 +499,7 @@ def scale_dependent_roughness_parameter_for_surface(surface, progress_recorder, 
         distances, rms_values_sq = scale_dependent_statistical_property(
             topographies, lambda x, y=None: np.mean(x * x), n=order_of_derivative, unit=unit,
             progress_callback=progress_callback, **kwargs)
-        series = [dict(name=xname,
+        series = [dict(xname,
                        x=distances,
                        y=np.sqrt(rms_values_sq),
                        )]
@@ -508,7 +507,7 @@ def scale_dependent_roughness_parameter_for_surface(surface, progress_recorder, 
         alerts.append(make_alert_entry('warning', surface.name, surface.get_absolute_url(), xname, str(exc)))
 
     return dict(
-        name=name,
+        name,
         xlabel='Distance',
         ylabel=ylabel,
         xunit=unit,
@@ -519,7 +518,7 @@ def scale_dependent_roughness_parameter_for_surface(surface, progress_recorder, 
         alerts=alerts)
 
 
-@register_implementation(art=ART_SERIES, name="Scale-dependent slope")
+@register_implementation("analysis", VIZ_SERIES, "Scale-dependent slope")
 def scale_dependent_slope(topography, progress_recorder=None, storage_prefix=None, nb_points_per_decade=10):
     return scale_dependent_roughness_parameter(
         topography,
@@ -536,7 +535,7 @@ def scale_dependent_slope(topography, progress_recorder=None, storage_prefix=Non
         storage_prefix=storage_prefix)
 
 
-@register_implementation(art=ART_SERIES, name="Scale-dependent slope")
+@register_implementation("analysis", VIZ_SERIES, "Scale-dependent slope")
 def scale_dependent_slope_for_surface(surface, progress_recorder=None, storage_prefix=None, nb_points_per_decade=10):
     return scale_dependent_roughness_parameter_for_surface(
         surface,
@@ -550,7 +549,7 @@ def scale_dependent_slope_for_surface(surface, progress_recorder=None, storage_p
         storage_prefix=storage_prefix)
 
 
-@register_implementation(art=ART_SERIES, name="Scale-dependent curvature")
+@register_implementation("analysis", VIZ_SERIES, "Scale-dependent curvature")
 def scale_dependent_curvature(topography, progress_recorder=None, storage_prefix=None, nb_points_per_decade=10):
     return scale_dependent_roughness_parameter(
         topography,
@@ -567,7 +566,7 @@ def scale_dependent_curvature(topography, progress_recorder=None, storage_prefix
         storage_prefix=storage_prefix)
 
 
-@register_implementation(art=ART_SERIES, name="Scale-dependent curvature")
+@register_implementation("analysis", VIZ_SERIES, "Scale-dependent curvature")
 def scale_dependent_curvature_for_surface(surface, progress_recorder=None, storage_prefix=None,
                                           nb_points_per_decade=10):
     return scale_dependent_roughness_parameter_for_surface(
@@ -582,7 +581,7 @@ def scale_dependent_curvature_for_surface(surface, progress_recorder=None, stora
         storage_prefix=storage_prefix)
 
 
-@register_implementation(art=ART_ROUGHNESS_PARAMETERS, name="Roughness parameters")
+@register_implementation("topobank_statistics", VIZ_ROUGHNESS_PARAMETERS, "Roughness parameters")
 def roughness_parameters(topography, progress_recorder=None, storage_prefix=None):
     """Calculate roughness parameters for given topography.
 
@@ -766,7 +765,7 @@ def _analysis_function(topography, funcname_profile, funcname_area, name, xlabel
         A = A[np.isfinite(A)]
 
         series += [
-            dict(name=xname,
+            dict(xname,
                  x=r,
                  y=A,
                  ),
@@ -792,7 +791,7 @@ def _analysis_function(topography, funcname_profile, funcname_area, name, xlabel
             r_T = r_T[np.isfinite(A_T)]
             A_T = A_T[np.isfinite(A_T)]
             series += [
-                dict(name=yname,
+                dict(yname,
                      x=r_T,
                      y=A_T,
                      visible=False,  # We hide everything by default except for the first data series
@@ -807,7 +806,7 @@ def _analysis_function(topography, funcname_profile, funcname_area, name, xlabel
             r_2D = r_2D[np.isfinite(A_2D)]
             A_2D = A_2D[np.isfinite(A_2D)]
             series += [
-                dict(name=aname,
+                dict(aname,
                      x=r_2D,
                      y=conv_2d_fac * A_2D if conv_2d_exponent == 0 else conv_2d_fac * r_2D ** conv_2d_exponent * A_2D,
                      visible=False,
@@ -829,7 +828,7 @@ def _analysis_function(topography, funcname_profile, funcname_area, name, xlabel
     # Add series with unreliable data
     #
     series += [
-        dict(name='{} (incl. unreliable data)'.format(xname),
+        dict('{} (incl. unreliable data)'.format(xname),
              x=ru,
              y=Au,
              visible=False,
@@ -838,12 +837,12 @@ def _analysis_function(topography, funcname_profile, funcname_area, name, xlabel
 
     if topography.dim == 2:
         series += [
-            dict(name='{} (incl. unreliable data)'.format(yname),
+            dict('{} (incl. unreliable data)'.format(yname),
                  x=ru_T,
                  y=Au_T,
                  visible=False,
                  ),
-            dict(name='{} (incl. unreliable data)'.format(aname),
+            dict('{} (incl. unreliable data)'.format(aname),
                  x=ru_2D,
                  y=conv_2d_fac * Au_2D if conv_2d_exponent == 0 else conv_2d_fac * ru_2D ** conv_2d_exponent * Au_2D,
                  visible=False,
@@ -854,7 +853,7 @@ def _analysis_function(topography, funcname_profile, funcname_area, name, xlabel
 
     # Return metadata for results as a dictionary (to be stored in the postgres database)
     return dict(
-        name=name,
+        name,
         xlabel=xlabel,
         ylabel=ylabel,
         xunit=xunit.format(unit),
@@ -886,7 +885,7 @@ def _analysis_function_for_surface(surface, progress_recorder, funcname_profile,
         #
         # Build series
         #
-        series += [dict(name=xname,
+        series += [dict(xname,
                         x=r,
                         y=A,
                         )]
@@ -896,7 +895,7 @@ def _analysis_function_for_surface(surface, progress_recorder, funcname_profile,
 
     # Return metadata for results as a dictionary (to be stored in the postgres database)
     result = dict(
-        name=name,
+        name,
         xlabel=xlabel,
         ylabel=ylabel,
         xunit=xunit.format(unit),
