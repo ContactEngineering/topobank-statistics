@@ -35,6 +35,15 @@ def roughness_parameters_card_view(request):
     controller = AnalysisController(user, subjects, function_id=function_id)
 
     #
+    # Basic context data
+    #
+    context = {
+        'dois': controller.dois,
+        'extraWarnings': [],
+        'analyses': controller.to_representation(request=request)
+    }
+
+    #
     # for statistics, count views per function
     #
     increase_statistics_by_date_and_object(Metric.objects.ANALYSES_RESULTS_VIEW_COUNT, obj=controller.function)
@@ -89,6 +98,9 @@ def roughness_parameters_card_view(request):
     #
     # create table
     #
-    return Response({
-        'table_data': data
-    })
+    context['tableData'] = data
+
+    #
+    # Return context
+    #
+    return Response(context)

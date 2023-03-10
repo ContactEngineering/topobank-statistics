@@ -1,13 +1,16 @@
 <script>
 
 import {v4 as uuid4} from 'uuid';
+import DataTablesLib from 'datatables.net';
 import DataTable from 'datatables.net-vue3'
 
 import BibliographyModal from 'topobank/analysis/BibliographyModal.vue';
 import TasksButton from 'topobank/analysis/TasksButton.vue';
 
+DataTable.use(DataTablesLib);
+
 export default {
-  name: 'series-card',
+  name: 'roughness-parameters-card',
   components: {
     BibliographyModal,
     DataTable,
@@ -37,13 +40,33 @@ export default {
     return {
       analyses: [],
       analysesAvailable: false,
-      categories: undefined,
-      dataSources: undefined,
+      columnDefs: [
+        // Indicate that first column contains HTML
+        // to have HTML tags removed for sorting/filtering
+        {targets: 0, type: 'html'}
+      ],
+      columns: [
+        {
+          title: 'Measurement',
+          render: function (data, type, row) {
+            let name = row.topography_name;
+            return `<a target="_blank" title="${name}" href="${row.topography_url}">${name}</a>`;
+          }
+        },
+        {data: 'quantity', title: 'Quantity'},
+        {data: 'from', title: 'From'},
+        {data: 'symbol', title: '<span title="Symbol according to ASME B46.1">Sym. 🛈</span>'},
+        {data: 'direction', title: 'Direct.'},
+        {
+          data: 'value', title: 'Value', render: function (x) {
+            return format_exponential(x, 5);
+          }
+        },
+        {data: 'unit', title: 'Unit'},
+      ],
       dois: [],
-      hasWarnings: false,
-      outputBackend: undefined,
-      plots: undefined,
-      title: this.functionName
+      data: [],
+      title: "Roughness parameters"
     }
   },
   mounted() {
@@ -66,19 +89,10 @@ export default {
       })
           .then(response => response.json())
           .then(data => {
+            console.log('Roughness parameters');
             console.log(data);
-            this.analyses = data.analyses;
-            this.title = data.plotConfiguration.title;
-            this.plots = [{
-              title: "default",
-              xAxisLabel: data.plotConfiguration.xAxisLabel,
-              yAxisLabel: data.plotConfiguration.yAxisLabel,
-              xAxisType: data.plotConfiguration.xAxisType,
-              yAxisType: data.plotConfiguration.yAxisType
-            }];
-            this.dataSources = data.plotConfiguration.dataSources;
-            this.categories = data.plotConfiguration.categories;
-            this.outputBackend = data.plotConfiguration.outputBackend;
+            //this.analyses = data.analyses;
+            this.data = data.tableData;
             this.dois = data.dois;
             this.analysesAvailable = true;
           });
@@ -115,8 +129,12 @@ export default {
 
       <div v-if="analysesAvailable" class="tab-content">
         <div class="tab-pane show active" role="tabpanel" aria-label="Tab showing a plot">
-          <data-table class="table table-striped table-bordered">
-            
+          <data-table class="table table-striped table-bordered"
+                      :column-defs="columnDefs"
+                      :columns="columns"
+                      :data="data"
+                      responsive="yes"
+                      scroll-x="yes">
           </data-table>
         </div>
       </div>
