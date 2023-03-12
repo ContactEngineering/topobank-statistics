@@ -1,13 +1,14 @@
 <script>
 
 import {v4 as uuid4} from 'uuid';
-import DataTablesLib from 'datatables.net';
-import DataTable from 'datatables.net-vue3'
+
+import DataTable from 'datatables.net-vue3';
+import DataTablesLib from 'datatables.net-bs4';
+
+DataTable.use(DataTablesLib);
 
 import BibliographyModal from 'topobank/analysis/BibliographyModal.vue';
 import TasksButton from 'topobank/analysis/TasksButton.vue';
-
-DataTable.use(DataTablesLib);
 
 export default {
   name: 'roughness-parameters-card',
@@ -92,7 +93,16 @@ export default {
             console.log('Roughness parameters');
             console.log(data);
             //this.analyses = data.analyses;
-            this.data = data.tableData;
+            /** replace null in value with NaN
+             * This is needed because we cannot pass NaN through JSON without
+             * extra libraries, so it is passed as null (workaround) */
+            this.data = data.tableData.map(x => {
+              if (x['value'] === null) {
+                console.log("replaced null");
+                x['value'] = NaN;
+              }
+              return x
+            });
             this.dois = data.dois;
             this.analysesAvailable = true;
           });
@@ -105,9 +115,11 @@ export default {
   <div class="card search-result-card">
     <div class="card-header">
       <div class="btn-group btn-group-sm float-right">
+        <!--
         <tasks-button :analyses="analyses"
                       :csrf-token="csrfToken">
         </tasks-button>
+        -->
         <button @click="updateCard" class="btn btn-default float-right ml-1">
           <i class="fa fa-redo"></i>
         </button>
@@ -167,8 +179,10 @@ export default {
       </nav>
     </div>
   </div>
+  <!--
   <bibliography-modal
       :id="`bibliography-modal-${uid}`"
       :dois="dois">
   </bibliography-modal>
+  -->
 </template>
