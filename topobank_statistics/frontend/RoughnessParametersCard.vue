@@ -90,7 +90,6 @@ export default {
       })
           .then(response => response.json())
           .then(data => {
-            console.log('Roughness parameters');
             console.log(data);
             //this.analyses = data.analyses;
             /** replace null in value with NaN
@@ -115,11 +114,9 @@ export default {
   <div class="card search-result-card">
     <div class="card-header">
       <div class="btn-group btn-group-sm float-right">
-        <!--
         <tasks-button :analyses="analyses"
                       :csrf-token="csrfToken">
         </tasks-button>
-        -->
         <button @click="updateCard" class="btn btn-default float-right ml-1">
           <i class="fa fa-redo"></i>
         </button>
@@ -179,10 +176,8 @@ export default {
       </nav>
     </div>
   </div>
-  <!--
   <bibliography-modal
       :id="`bibliography-modal-${uid}`"
       :dois="dois">
   </bibliography-modal>
-  -->
 </template>
