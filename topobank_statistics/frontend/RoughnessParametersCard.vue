@@ -91,7 +91,7 @@ export default {
           .then(response => response.json())
           .then(data => {
             console.log(data);
-            //this.analyses = data.analyses;
+            this.analyses = data.analyses;
             /** replace null in value with NaN
              * This is needed because we cannot pass NaN through JSON without
              * extra libraries, so it is passed as null (workaround) */
