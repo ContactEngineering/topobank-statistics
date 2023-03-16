@@ -1,8 +1,8 @@
 import {createApp} from 'vue';
-import PlotCard from './RoughnessParametersCard.vue';
+import RoughnessParametersCard from './RoughnessParametersCard.vue';
 
 export function createCardApp(el, props) {
-    let app = createApp(PlotCard, props);
+    let app = createApp(RoughnessParametersCard, props);
     app.mount(el);
     return app;
 }
