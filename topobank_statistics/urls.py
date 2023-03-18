@@ -1,12 +1,12 @@
 from django.urls import path
 from django.contrib.auth.decorators import login_required
 
-from .functions import VIZ_ROUGHNESS_PARAMETERS
+from .functions import APP_NAME, VIZ_ROUGHNESS_PARAMETERS
 from .views import roughness_parameters_card_view
 
 # App name determines the internal name space, e.g. example can be references
 # as 'statistics:example'
-app_name = 'topobank_statistics'
+app_name = APP_NAME
 urlpatterns = [
     # POST
     # * Triggers analyses if not yet running

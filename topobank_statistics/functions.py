@@ -8,6 +8,7 @@ from topobank.analysis.functions import reasonable_bins_argument, wrap_series, \
     make_alert_entry, ContainerProxy, VIZ_SERIES
 from topobank.analysis.registry import register_implementation
 
+APP_NAME = "topobank_statistics"
 VIZ_ROUGHNESS_PARAMETERS = "roughness_parameters"
 
 GAUSSIAN_FIT_SERIES_NAME = 'Gaussian fit'
@@ -581,7 +582,7 @@ def scale_dependent_curvature_for_surface(surface, progress_recorder=None, stora
         storage_prefix=storage_prefix)
 
 
-@register_implementation("topobank_statistics", VIZ_ROUGHNESS_PARAMETERS, "Roughness parameters")
+@register_implementation(APP_NAME, VIZ_ROUGHNESS_PARAMETERS, "Roughness parameters")
 def roughness_parameters(topography, progress_recorder=None, storage_prefix=None):
     """Calculate roughness parameters for given topography.
 
