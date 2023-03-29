@@ -40,18 +40,18 @@ def height_distribution(topography, bins=None, wfac=5, progress_recorder=None, s
         unit = None
 
     series = [
-        dict('Height distribution',
+        dict(name='Height distribution',
              x=(bin_edges[:-1] + bin_edges[1:]) / 2,
              y=hist,
              ),
-        dict(GAUSSIAN_FIT_SERIES_NAME,
+        dict(name=GAUSSIAN_FIT_SERIES_NAME,
              x=x_gauss,
              y=y_gauss,
              )
     ]
 
     return dict(
-        'Height distribution',
+        name='Height distribution',
         scalars={
             'Mean Height': dict(value=mean_height, unit=unit),
             'RMS Height': dict(value=rms_height, unit=unit),
@@ -133,7 +133,7 @@ def _moments_histogram_gaussian(arr, bins, topography, wfac, quantity, label, un
     }
 
     series = [
-        dict(f'{quantity.capitalize()} distribution ({label})',
+        dict(name=f'{quantity.capitalize()} distribution ({label})',
              x=(bin_edges[:-1] + bin_edges[1:]) / 2,
              y=hist)]
 
@@ -144,7 +144,7 @@ def _moments_histogram_gaussian(arr, bins, topography, wfac, quantity, label, un
         y_gauss = np.exp(-(x_gauss - mean) ** 2 / (2 * rms ** 2)) / (np.sqrt(2 * np.pi) * rms)
 
         series.append(
-            dict(GAUSSIAN_FIT_SERIES_NAME + f' ({label})',
+            dict(name=GAUSSIAN_FIT_SERIES_NAME + f' ({label})',
                  x=x_gauss,
                  y=y_gauss)
         )
@@ -216,7 +216,7 @@ def slope_distribution(topography, bins=None, wfac=5, progress_recorder=None, st
         raise ValueError("This analysis function can only handle 1D or 2D topographies.")
 
     return dict(
-        'Slope distribution',
+        name='Slope distribution',
         xlabel='Slope',
         ylabel='Probability density',
         xunit='1',
@@ -270,18 +270,18 @@ def curvature_distribution(topography, bins=None, wfac=5, progress_recorder=None
     inverse_unit = '{}⁻¹'.format(unit)
 
     series = [
-        dict('Curvature distribution',
+        dict(name='Curvature distribution',
              x=(bin_edges[:-1] + bin_edges[1:]) / 2,
              y=hist,
              ),
-        dict(GAUSSIAN_FIT_SERIES_NAME,
+        dict(name=GAUSSIAN_FIT_SERIES_NAME,
              x=x_gauss,
              y=y_gauss,
              )
     ]
 
     return dict(
-        'Curvature distribution',
+        name='Curvature distribution',
         scalars={
             'Mean Curvature': dict(value=mean_curv, unit=inverse_unit),
             'RMS Curvature': dict(value=rms_curv, unit=inverse_unit),
@@ -437,7 +437,7 @@ def scale_dependent_roughness_parameter(topography, progress_recorder, order_of_
         nonlocal series, progress_offset
         try:
             distances, rms_values_sq = topography.scale_dependent_statistical_property(**func_kwargs)
-            series += [dict(series_name,
+            series += [dict(name=series_name,
                             x=distances,
                             y=np.sqrt(rms_values_sq),
                             visible=is_reliable_visible)]
@@ -446,7 +446,7 @@ def scale_dependent_roughness_parameter(topography, progress_recorder, order_of_
         progress_offset += 1
 
         distances, rms_values_sq = topography.scale_dependent_statistical_property(reliable=False, **func_kwargs)
-        series += [dict(series_name + ' (incl. unreliable data)',
+        series += [dict(name=series_name + ' (incl. unreliable data)',
                         x=distances,
                         y=np.sqrt(rms_values_sq),
                         visible=False),
@@ -474,7 +474,7 @@ def scale_dependent_roughness_parameter(topography, progress_recorder, order_of_
 
     unit = topography.unit
     return dict(
-        name,
+        name=name,
         xlabel='Distance',
         ylabel=ylabel,
         xunit=unit,
@@ -500,7 +500,7 @@ def scale_dependent_roughness_parameter_for_surface(surface, progress_recorder, 
         distances, rms_values_sq = scale_dependent_statistical_property(
             topographies, lambda x, y=None: np.mean(x * x), n=order_of_derivative, unit=unit,
             progress_callback=progress_callback, **kwargs)
-        series = [dict(xname,
+        series = [dict(name=xname,
                        x=distances,
                        y=np.sqrt(rms_values_sq),
                        )]
@@ -508,7 +508,7 @@ def scale_dependent_roughness_parameter_for_surface(surface, progress_recorder, 
         alerts.append(make_alert_entry('warning', surface.name, surface.get_absolute_url(), xname, str(exc)))
 
     return dict(
-        name,
+        name=name,
         xlabel='Distance',
         ylabel=ylabel,
         xunit=unit,
@@ -766,7 +766,7 @@ def _analysis_function(topography, funcname_profile, funcname_area, name, xlabel
         A = A[np.isfinite(A)]
 
         series += [
-            dict(xname,
+            dict(name=xname,
                  x=r,
                  y=A,
                  ),
@@ -792,7 +792,7 @@ def _analysis_function(topography, funcname_profile, funcname_area, name, xlabel
             r_T = r_T[np.isfinite(A_T)]
             A_T = A_T[np.isfinite(A_T)]
             series += [
-                dict(yname,
+                dict(name=yname,
                      x=r_T,
                      y=A_T,
                      visible=False,  # We hide everything by default except for the first data series
@@ -807,7 +807,7 @@ def _analysis_function(topography, funcname_profile, funcname_area, name, xlabel
             r_2D = r_2D[np.isfinite(A_2D)]
             A_2D = A_2D[np.isfinite(A_2D)]
             series += [
-                dict(aname,
+                dict(name=aname,
                      x=r_2D,
                      y=conv_2d_fac * A_2D if conv_2d_exponent == 0 else conv_2d_fac * r_2D ** conv_2d_exponent * A_2D,
                      visible=False,
@@ -829,7 +829,7 @@ def _analysis_function(topography, funcname_profile, funcname_area, name, xlabel
     # Add series with unreliable data
     #
     series += [
-        dict('{} (incl. unreliable data)'.format(xname),
+        dict(name='{} (incl. unreliable data)'.format(xname),
              x=ru,
              y=Au,
              visible=False,
@@ -838,12 +838,12 @@ def _analysis_function(topography, funcname_profile, funcname_area, name, xlabel
 
     if topography.dim == 2:
         series += [
-            dict('{} (incl. unreliable data)'.format(yname),
+            dict(name='{} (incl. unreliable data)'.format(yname),
                  x=ru_T,
                  y=Au_T,
                  visible=False,
                  ),
-            dict('{} (incl. unreliable data)'.format(aname),
+            dict(name='{} (incl. unreliable data)'.format(aname),
                  x=ru_2D,
                  y=conv_2d_fac * Au_2D if conv_2d_exponent == 0 else conv_2d_fac * ru_2D ** conv_2d_exponent * Au_2D,
                  visible=False,
@@ -854,7 +854,7 @@ def _analysis_function(topography, funcname_profile, funcname_area, name, xlabel
 
     # Return metadata for results as a dictionary (to be stored in the postgres database)
     return dict(
-        name,
+        name=name,
         xlabel=xlabel,
         ylabel=ylabel,
         xunit=xunit.format(unit),
@@ -886,7 +886,7 @@ def _analysis_function_for_surface(surface, progress_recorder, funcname_profile,
         #
         # Build series
         #
-        series += [dict(xname,
+        series += [dict(name=xname,
                         x=r,
                         y=A,
                         )]
@@ -896,7 +896,7 @@ def _analysis_function_for_surface(surface, progress_recorder, funcname_profile,
 
     # Return metadata for results as a dictionary (to be stored in the postgres database)
     result = dict(
-        name,
+        name=name,
         xlabel=xlabel,
         ylabel=ylabel,
         xunit=xunit.format(unit),
