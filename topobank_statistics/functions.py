@@ -500,7 +500,7 @@ def scale_dependent_roughness_parameter_for_surface(surface, progress_recorder, 
         distances, rms_values_sq = scale_dependent_statistical_property(
             topographies, lambda x, y=None: np.mean(x * x), n=order_of_derivative, unit=unit,
             progress_callback=progress_callback, **kwargs)
-        series = [dict(xname,
+        series = [dict(name=xname,
                        x=distances,
                        y=np.sqrt(rms_values_sq),
                        )]
@@ -508,7 +508,7 @@ def scale_dependent_roughness_parameter_for_surface(surface, progress_recorder, 
         alerts.append(make_alert_entry('warning', surface.name, surface.get_absolute_url(), xname, str(exc)))
 
     return dict(
-        name,
+        name=name,
         xlabel='Distance',
         ylabel=ylabel,
         xunit=unit,
@@ -766,7 +766,7 @@ def _analysis_function(topography, funcname_profile, funcname_area, name, xlabel
         A = A[np.isfinite(A)]
 
         series += [
-            dict(xname,
+            dict(name=xname,
                  x=r,
                  y=A,
                  ),
@@ -792,7 +792,7 @@ def _analysis_function(topography, funcname_profile, funcname_area, name, xlabel
             r_T = r_T[np.isfinite(A_T)]
             A_T = A_T[np.isfinite(A_T)]
             series += [
-                dict(yname,
+                dict(name=yname,
                      x=r_T,
                      y=A_T,
                      visible=False,  # We hide everything by default except for the first data series
@@ -807,7 +807,7 @@ def _analysis_function(topography, funcname_profile, funcname_area, name, xlabel
             r_2D = r_2D[np.isfinite(A_2D)]
             A_2D = A_2D[np.isfinite(A_2D)]
             series += [
-                dict(aname,
+                dict(name=aname,
                      x=r_2D,
                      y=conv_2d_fac * A_2D if conv_2d_exponent == 0 else conv_2d_fac * r_2D ** conv_2d_exponent * A_2D,
                      visible=False,
@@ -829,7 +829,7 @@ def _analysis_function(topography, funcname_profile, funcname_area, name, xlabel
     # Add series with unreliable data
     #
     series += [
-        dict('{} (incl. unreliable data)'.format(xname),
+        dict(name='{} (incl. unreliable data)'.format(xname),
              x=ru,
              y=Au,
              visible=False,
@@ -838,12 +838,12 @@ def _analysis_function(topography, funcname_profile, funcname_area, name, xlabel
 
     if topography.dim == 2:
         series += [
-            dict('{} (incl. unreliable data)'.format(yname),
+            dict(name='{} (incl. unreliable data)'.format(yname),
                  x=ru_T,
                  y=Au_T,
                  visible=False,
                  ),
-            dict('{} (incl. unreliable data)'.format(aname),
+            dict(name='{} (incl. unreliable data)'.format(aname),
                  x=ru_2D,
                  y=conv_2d_fac * Au_2D if conv_2d_exponent == 0 else conv_2d_fac * ru_2D ** conv_2d_exponent * Au_2D,
                  visible=False,
@@ -854,7 +854,7 @@ def _analysis_function(topography, funcname_profile, funcname_area, name, xlabel
 
     # Return metadata for results as a dictionary (to be stored in the postgres database)
     return dict(
-        name,
+        name=name,
         xlabel=xlabel,
         ylabel=ylabel,
         xunit=xunit.format(unit),
@@ -886,7 +886,7 @@ def _analysis_function_for_surface(surface, progress_recorder, funcname_profile,
         #
         # Build series
         #
-        series += [dict(xname,
+        series += [dict(name=xname,
                         x=r,
                         y=A,
                         )]
@@ -896,7 +896,7 @@ def _analysis_function_for_surface(surface, progress_recorder, funcname_profile,
 
     # Return metadata for results as a dictionary (to be stored in the postgres database)
     result = dict(
-        name,
+        name=name,
         xlabel=xlabel,
         ylabel=ylabel,
         xunit=xunit.format(unit),
