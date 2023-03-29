@@ -40,18 +40,18 @@ def height_distribution(topography, bins=None, wfac=5, progress_recorder=None, s
         unit = None
 
     series = [
-        dict('Height distribution',
+        dict(name='Height distribution',
              x=(bin_edges[:-1] + bin_edges[1:]) / 2,
              y=hist,
              ),
-        dict(GAUSSIAN_FIT_SERIES_NAME,
+        dict(name=GAUSSIAN_FIT_SERIES_NAME,
              x=x_gauss,
              y=y_gauss,
              )
     ]
 
     return dict(
-        'Height distribution',
+        name='Height distribution',
         scalars={
             'Mean Height': dict(value=mean_height, unit=unit),
             'RMS Height': dict(value=rms_height, unit=unit),
@@ -133,7 +133,7 @@ def _moments_histogram_gaussian(arr, bins, topography, wfac, quantity, label, un
     }
 
     series = [
-        dict(f'{quantity.capitalize()} distribution ({label})',
+        dict(name=f'{quantity.capitalize()} distribution ({label})',
              x=(bin_edges[:-1] + bin_edges[1:]) / 2,
              y=hist)]
 
@@ -144,7 +144,7 @@ def _moments_histogram_gaussian(arr, bins, topography, wfac, quantity, label, un
         y_gauss = np.exp(-(x_gauss - mean) ** 2 / (2 * rms ** 2)) / (np.sqrt(2 * np.pi) * rms)
 
         series.append(
-            dict(GAUSSIAN_FIT_SERIES_NAME + f' ({label})',
+            dict(name=GAUSSIAN_FIT_SERIES_NAME + f' ({label})',
                  x=x_gauss,
                  y=y_gauss)
         )
@@ -216,7 +216,7 @@ def slope_distribution(topography, bins=None, wfac=5, progress_recorder=None, st
         raise ValueError("This analysis function can only handle 1D or 2D topographies.")
 
     return dict(
-        'Slope distribution',
+        name='Slope distribution',
         xlabel='Slope',
         ylabel='Probability density',
         xunit='1',
@@ -270,18 +270,18 @@ def curvature_distribution(topography, bins=None, wfac=5, progress_recorder=None
     inverse_unit = '{}⁻¹'.format(unit)
 
     series = [
-        dict('Curvature distribution',
+        dict(name='Curvature distribution',
              x=(bin_edges[:-1] + bin_edges[1:]) / 2,
              y=hist,
              ),
-        dict(GAUSSIAN_FIT_SERIES_NAME,
+        dict(name=GAUSSIAN_FIT_SERIES_NAME,
              x=x_gauss,
              y=y_gauss,
              )
     ]
 
     return dict(
-        'Curvature distribution',
+        name='Curvature distribution',
         scalars={
             'Mean Curvature': dict(value=mean_curv, unit=inverse_unit),
             'RMS Curvature': dict(value=rms_curv, unit=inverse_unit),
@@ -437,7 +437,7 @@ def scale_dependent_roughness_parameter(topography, progress_recorder, order_of_
         nonlocal series, progress_offset
         try:
             distances, rms_values_sq = topography.scale_dependent_statistical_property(**func_kwargs)
-            series += [dict(series_name,
+            series += [dict(name=series_name,
                             x=distances,
                             y=np.sqrt(rms_values_sq),
                             visible=is_reliable_visible)]
@@ -446,7 +446,7 @@ def scale_dependent_roughness_parameter(topography, progress_recorder, order_of_
         progress_offset += 1
 
         distances, rms_values_sq = topography.scale_dependent_statistical_property(reliable=False, **func_kwargs)
-        series += [dict(series_name + ' (incl. unreliable data)',
+        series += [dict(name=series_name + ' (incl. unreliable data)',
                         x=distances,
                         y=np.sqrt(rms_values_sq),
                         visible=False),
@@ -474,7 +474,7 @@ def scale_dependent_roughness_parameter(topography, progress_recorder, order_of_
 
     unit = topography.unit
     return dict(
-        name,
+        name=name,
         xlabel='Distance',
         ylabel=ylabel,
         xunit=unit,
