@@ -75,7 +75,6 @@ export default {
   },
   computed: {
     analysisIds() {
-      console.log(this.analyses);
       return this.analyses.map(a => a.id).join();
     }
   },
@@ -96,14 +95,12 @@ export default {
       })
           .then(response => response.json())
           .then(data => {
-            console.log(data);
             this.analyses = data.analyses;
             /** replace null in value with NaN
              * This is needed because we cannot pass NaN through JSON without
              * extra libraries, so it is passed as null (workaround) */
             this.data = data.tableData.map(x => {
               if (x['value'] === null) {
-                console.log("replaced null");
                 x['value'] = NaN;
               }
               return x
