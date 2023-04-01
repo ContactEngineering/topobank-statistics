@@ -10,6 +10,8 @@ DataTable.use(DataTablesLib);
 import BibliographyModal from 'topobank/analysis/BibliographyModal.vue';
 import TasksButton from 'topobank/analysis/TasksButton.vue';
 
+import {formatExponential} from "topobank/utils/formatting";
+
 export default {
   name: 'roughness-parameters-card',
   components: {
@@ -60,7 +62,7 @@ export default {
         {data: 'direction', title: 'Direct.'},
         {
           data: 'value', title: 'Value', render: function (x) {
-            return format_exponential(x, 5);
+            return formatExponential(x, 5);
           }
         },
         {data: 'unit', title: 'Unit'},
