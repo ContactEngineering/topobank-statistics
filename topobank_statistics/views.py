@@ -3,7 +3,7 @@ import math
 from django.views.generic import TemplateView
 
 from topobank.analysis.utils import round_to_significant_digits
-#from topobank.analysis.views import SimpleCardView
+from topobank.analysis.views import SimpleCardView
 from topobank.analysis.registry import register_card_view_class
 
 from .functions import ART_ROUGHNESS_PARAMETERS
@@ -12,9 +12,8 @@ NUM_SIGNIFICANT_DIGITS_RMS_VALUES = 5
 
 
 @register_card_view_class(ART_ROUGHNESS_PARAMETERS)
-#class RoughnessParametersCardView(SimpleCardView):
+class RoughnessParametersCardView(SimpleCardView):
 
-class RoughnessParametersCardView:
     template_name_pattern = "topobank_statistics/roughnessparameters_card_{template_flavor}.html"
 
     @staticmethod
