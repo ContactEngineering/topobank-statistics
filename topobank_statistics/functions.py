@@ -386,7 +386,10 @@ def variable_bandwidth(topography, progress_recorder=None, storage_prefix=None):
 
 
 @register_implementation("analysis", VIZ_SERIES, "Variable bandwidth")
-def variable_bandwidth_for_surface(surface, progress_recorder=None, storage_prefix=None, nb_points_per_decade=10):
+def variable_bandwidth_for_surface(surface, progress_recorder=None, storage_prefix=None):
+    # Resampling not possible for topographies, but all function for same name must have identical signatures. We hence
+    # simply fix `nb_points_per_decade` here.
+    nb_points_per_decade = 10
     return _analysis_function_for_surface(surface,
                                           progress_recorder,
                                          'variable_bandwidth_from_profile',
