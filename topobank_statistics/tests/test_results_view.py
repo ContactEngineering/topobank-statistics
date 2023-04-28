@@ -24,11 +24,10 @@ def test_roughness_params_download_as_txt(client, two_topos, file_format, handle
 
     func = AnalysisFunction.objects.get(name='Roughness parameters')
 
-    import pickle
-    pickled_kwargs = pickle.dumps({})
+    kwargs = {}
 
-    ana1 = TopographyAnalysisFactory.create(subject=t1, function=func, kwargs=pickled_kwargs)
-    ana2 = TopographyAnalysisFactory.create(subject=t1, function=func, kwargs=pickled_kwargs)
+    ana1 = TopographyAnalysisFactory.create(subject=t1, function=func, kwargs=kwargs)
+    ana2 = TopographyAnalysisFactory.create(subject=t1, function=func, kwargs=kwargs)
 
     username = 'testuser'
     password = 'abcd$1234'
