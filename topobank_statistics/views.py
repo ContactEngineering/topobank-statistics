@@ -6,7 +6,8 @@ from rest_framework.response import Response
 from trackstats.models import Metric
 
 from topobank.usage_stats.utils import increase_statistics_by_date_and_object
-from topobank.analysis.utils import AnalysisController, round_to_significant_digits
+from topobank.analysis.utils import round_to_significant_digits
+from topobank.analysis.controller import AnalysisController
 
 NUM_SIGNIFICANT_DIGITS_RMS_VALUES = 5
 
@@ -56,7 +57,7 @@ def roughness_parameters_card_view(request):
     #
     # Filter only successful ones
     #
-    analyses_success = controller(['su'], True)
+    analyses_success = controller.get(['su'], True)
 
     data = []
     for analysis in analyses_success:
