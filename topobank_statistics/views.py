@@ -40,7 +40,6 @@ def roughness_parameters_card_view(request):
     #
     context = {
         'dois': controller.dois,
-        'extraWarnings': [],
         'analyses': controller.to_representation(request=request)
     }
 
