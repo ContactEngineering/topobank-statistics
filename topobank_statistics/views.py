@@ -27,13 +27,7 @@ def roughness_parameters_card_view(request):
                 v = round_to_significant_digits(float(v), NUM_SIGNIFICANT_DIGITS_RMS_VALUES)
         return v
 
-    user = request.user
-    data = request.data
-
-    function_id = int(data.get('function_id'))
-    subjects = data.get('subjects')
-
-    controller = AnalysisController(user, subjects, function_id=function_id)
+    controller = AnalysisController.from_request(request)
 
     #
     # Basic context data
