@@ -8,6 +8,7 @@ import DataTablesLib from 'datatables.net-bs4';
 DataTable.use(DataTablesLib);
 
 import BibliographyModal from 'topobank/analysis/BibliographyModal.vue';
+import CardExpandButton from 'topobank/analysis/CardExpandButton.vue';
 import TasksButton from 'topobank/analysis/TasksButton.vue';
 
 import {formatExponential} from "topobank/utils/formatting";
@@ -16,6 +17,7 @@ export default {
     name: 'roughness-parameters-card',
     components: {
         BibliographyModal,
+        CardExpandButton,
         DataTable,
         TasksButton
     },
@@ -25,7 +27,10 @@ export default {
             default: '/plugins/topobank_statistics/card/roughness-parameters'
         },
         csrfToken: String,
-        detailUrl: String,
+        detailUrl: {
+            type: String,
+            default: '/plugins/topobank_statistics/html/detail/'
+        },
         enlarged: {
             type: Boolean,
             default: false
@@ -128,11 +133,12 @@ export default {
                 <button @click="updateCard" class="btn btn-default float-right ml-1">
                     <i class="fa fa-redo"></i>
                 </button>
-                <div v-if="!enlarged" class="btn-group btn-group-sm float-right">
-                    <a :href="detailUrl" class="btn btn-default float-right">
-                        <i class="fa fa-expand"></i>
-                    </a>
-                </div>
+                <card-expand-button v-if="!enlarged"
+                                    :detail-url="detailUrl"
+                                    :function-id="functionId"
+                                    :subjects="subjects"
+                                    class="btn-group btn-group-sm float-right">
+                </card-expand-button>
             </div>
             <a class="text-dark" href="#" data-toggle="collapse" :data-target="`#sidebar-${uid}`">
                 <h5><i class="fa fa-bars"></i> {{ title }}</h5>
