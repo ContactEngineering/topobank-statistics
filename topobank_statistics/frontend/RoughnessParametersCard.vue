@@ -29,7 +29,7 @@ export default {
         csrfToken: String,
         detailUrl: {
             type: String,
-            default: '/plugins/topobank_statistics/html/detail/'
+            default: '/analysis/html/detail/'
         },
         enlarged: {
             type: Boolean,
