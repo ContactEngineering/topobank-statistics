@@ -671,7 +671,7 @@ def test_autocorrelation_for_surface(simple_surface):
 def test_variable_bandwidth_for_surface(simple_surface):
     """Testing variable bandwidth for an artificial surface."""
 
-    result = variable_bandwidth_for_surface(simple_surface, nb_points_per_decade=3)
+    result = variable_bandwidth_for_surface(simple_surface)
 
     expected_result = {
         'name': 'Variable-bandwidth analysis',
@@ -685,12 +685,14 @@ def test_variable_bandwidth_for_surface(simple_surface):
             {
                 'name': 'Profile decomposition along x',
                 # This is a pure regression test
-                'x': [3.892199e-01, 7.784397e-01, 1.556879, 3.113759,
-                      6.227518, 1.342703e+01, 2.808543e+01, 6.861511e+01,
-                      1.250000e+02, 2.500000e+02, 7.500000e+02],
+                'x': [3.892199e-01, 7.784397e-01, 1.556879e+00, 3.113759e+00,
+                      6.227518e+00, 1.171622e+01, 2.348236e+01, 4.706498e+01,
+                      5.991179e+01, 9.433142e+01, 1.250000e+02, 2.500000e+02,
+                      5.000000e+02, 1.000000e+03],
                 'y': [9.832030e-03, 3.501679e-02, 1.304232e-01, 4.237846e-01,
-                      6.662862e-01, 6.774048e-01, 6.856179e-01, 3.342818e+02,
-                      7.008752e+02, 7.070114e+02, 7.083317e+02],
+                      6.662862e-01, 6.774048e-01, 6.856179e-01, 6.874945e-01,
+                      6.678760e+02, 6.875201e-01, 7.008752e+02, 7.070114e+02,
+                      7.081023e+02, 7.085611e+02],
             }
         ]
     }

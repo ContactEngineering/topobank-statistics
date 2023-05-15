@@ -1,11 +1,10 @@
-from django.urls import path, re_path
+from django.urls import path
 from django.contrib.auth.decorators import login_required
 
 from .functions import APP_NAME, VIZ_ROUGHNESS_PARAMETERS
 from .views import roughness_parameters_card_view
 
-# App name determines the internal name space, e.g. example can be references
-# as 'statistics:example'
+# App name determines the internal name space
 app_name = APP_NAME
 urlpatterns = [
     # POST
