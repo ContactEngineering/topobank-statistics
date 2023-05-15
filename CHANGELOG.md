@@ -1,5 +1,13 @@
 # Changelog for plugin *topobank-statistics*
 
+## 1.0.2 (2023-04-06)
+
+- BUG: Reverted to old contact mechanics card view
+
+## 1.0.1 (2023-04-06)
+
+- MAINT: Fixes to version discovery
+
 ## 1.0.0 (2023-01-31)
 
 - MAINT: Version discovery from VCS
