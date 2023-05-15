@@ -11,7 +11,7 @@ from topobank.manager.tests.utils import two_topos
 from topobank.analysis.models import AnalysisFunction
 from topobank.analysis.tests.utils import TopographyAnalysisFactory, Topography2DFactory, SurfaceFactory
 
-from ..functions import VIZ_ROUGHNESS_PARAMETERS
+from ..functions import APP_NAME, VIZ_ROUGHNESS_PARAMETERS
 from ..views import roughness_parameters_card_view, NUM_SIGNIFICANT_DIGITS_RMS_VALUES
 
 
@@ -132,7 +132,7 @@ def test_roughness_params_rounded(api_rf, mocker, template_flavor, user_with_plu
             }
         ]
 
-    m = mocker.patch('topobank.analysis.registry.AnalysisFunctionImplementation.python_function')
+    m = mocker.patch('topobank.analysis.models.AnalysisFunctionImplementation.python_function')
     m.return_value = myfunc
 
     surf = SurfaceFactory(creator=user_with_plugin)
@@ -141,7 +141,7 @@ def test_roughness_params_rounded(api_rf, mocker, template_flavor, user_with_plu
     func = AnalysisFunction.objects.get(name='Roughness parameters')
     TopographyAnalysisFactory(subject=topo, function=func)
 
-    request = api_rf.post(reverse(f'topobank_statistics:card-{VIZ_ROUGHNESS_PARAMETERS}'), data={
+    request = api_rf.post('/plugins/topobank_statistics/card/roughness-parameters', data={
         'function_id': func.id,
         'subjects': subjects_to_dict([topo]),
     }, format='json')
@@ -209,7 +209,7 @@ def test_roughness_params_rounded(api_rf, mocker, template_flavor, user_with_plu
         }
     ]
 
-    assert response.context_data['table_data'] == exp_table_data
+    assert response.data['tableData'] == exp_table_data
 
     #
     # We do not render response here, because this causes problems
