@@ -132,7 +132,7 @@ def test_roughness_params_rounded(api_rf, mocker, template_flavor, user_with_plu
             }
         ]
 
-    m = mocker.patch('topobank.analysis.models.AnalysisFunctionImplementation.python_function')
+    m = mocker.patch('topobank.analysis.registry.AnalysisFunctionImplementation.python_function')
     m.return_value = myfunc
 
     surf = SurfaceFactory(creator=user_with_plugin)
