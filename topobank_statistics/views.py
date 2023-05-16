@@ -1,22 +1,19 @@
 import math
 
-from django.views.generic import TemplateView
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
+from trackstats.models import Metric
+
+from topobank.usage_stats.utils import increase_statistics_by_date_and_object
 from topobank.analysis.utils import round_to_significant_digits
-from topobank.analysis.views import SimpleCardView
-from topobank.analysis.registry import register_card_view_class
-
-from .functions import ART_ROUGHNESS_PARAMETERS
+from topobank.analysis.controller import AnalysisController
 
 NUM_SIGNIFICANT_DIGITS_RMS_VALUES = 5
 
 
-@register_card_view_class(ART_ROUGHNESS_PARAMETERS)
-class RoughnessParametersCardView(SimpleCardView):
-
-    template_name_pattern = "topobank_statistics/roughnessparameters_card_{template_flavor}.html"
-
-    @staticmethod
+@api_view(['POST'])
+def roughness_parameters_card_view(request):
     def _convert_value(v):
         if v is not None:
             if math.isnan(v):
@@ -27,67 +24,77 @@ class RoughnessParametersCardView(SimpleCardView):
                 return 'infinity'
             else:
                 # convert float32 to float, round to fixed number of significant digits
-                v = round_to_significant_digits(float(v),
-                                                NUM_SIGNIFICANT_DIGITS_RMS_VALUES)
+                v = round_to_significant_digits(float(v), NUM_SIGNIFICANT_DIGITS_RMS_VALUES)
         return v
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+    controller = AnalysisController.from_request(request)
 
-        analyses_success = context['analyses_success']
+    #
+    # Basic context data
+    #
+    context = {
+        'dois': controller.dois,
+        'analyses': controller.to_representation(request=request)
+    }
 
-        data = []
-        for analysis in analyses_success:
-            analysis_result = analysis.result
+    #
+    # for statistics, count views per function
+    #
+    increase_statistics_by_date_and_object(Metric.objects.ANALYSES_RESULTS_VIEW_COUNT, obj=controller.function)
 
-            for d in analysis_result:
-                d['value'] = self._convert_value(d['value'])
+    #
+    # Trigger missing analyses
+    #
+    controller.trigger_missing_analyses()
 
-                if not d['direction']:
-                    d['direction'] = ''
-                if not d['from']:
-                    d['from'] = ''
-                if not d['symbol']:
-                    d['symbol'] = ''
+    #
+    # Filter only successful ones
+    #
+    analyses_success = controller.get(['su'], True)
 
-                # put topography in every line
-                topo = analysis.subject
-                d.update(dict(topography_name=topo.name,
-                              topography_url=topo.get_absolute_url()))
+    data = []
+    for analysis in analyses_success:
+        analysis_result = analysis.result
 
-            data.extend(analysis_result)
+        for d in analysis_result:
+            d['value'] = _convert_value(d['value'])
 
-        #
-        # find out all existing keys while keeping order
-        #
-        all_keys = []
+            if not d['direction']:
+                d['direction'] = ''
+            if not d['from']:
+                d['from'] = ''
+            if not d['symbol']:
+                d['symbol'] = ''
+
+            # put topography in every line
+            topo = analysis.subject
+            d.update(dict(topography_name=topo.name,
+                          topography_url=topo.get_absolute_url()))
+
+        data.extend(analysis_result)
+
+    #
+    # find out all existing keys while keeping order
+    #
+    all_keys = []
+    for d in data:
+        for k in d.keys():
+            if k not in all_keys:
+                all_keys.append(k)
+
+    #
+    # make sure every dict has all keys
+    #
+    for k in all_keys:
         for d in data:
-            for k in d.keys():
-                if k not in all_keys:
-                    all_keys.append(k)
+            d.setdefault(k)
 
-        #
-        # make sure every dict has all keys
-        #
-        for k in all_keys:
-            for d in data:
-                d.setdefault(k)
+    #
+    # create table
+    #
+    context['tableData'] = data
 
-        #
-        # create table
-        #
-        context.update(dict(
-            table_data=data
-        ))
-
-        return context
-
-
-class ExampleView(TemplateView):
-    template_name = "topobank_statistics/example.html"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        from .apps import __version__ as version
-        context['plugin_version'] = version
-        return context
+    #
+    # Return context
+    #
+    return Response(context)

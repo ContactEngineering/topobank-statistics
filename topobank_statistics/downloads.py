@@ -9,10 +9,10 @@ from django.http import HttpResponse
 from topobank.analysis.registry import register_download_function
 from topobank.analysis.downloads import publications_urls, analyses_meta_data_dataframe, analysis_header_for_txt_file
 
-from .functions import ART_ROUGHNESS_PARAMETERS
+from .functions import VIZ_ROUGHNESS_PARAMETERS
 
 
-@register_download_function(ART_ROUGHNESS_PARAMETERS, 'results', 'txt')
+@register_download_function(VIZ_ROUGHNESS_PARAMETERS, 'results', 'txt')
 def download_roughness_parameters_to_txt(request, analyses):
     """Download roughness parameters from given analyses as CSV file.
 
@@ -87,7 +87,7 @@ def download_roughness_parameters_to_txt(request, analyses):
     return response
 
 
-@register_download_function(ART_ROUGHNESS_PARAMETERS, 'results', 'xlsx')
+@register_download_function(VIZ_ROUGHNESS_PARAMETERS, 'results', 'xlsx')
 def download_roughness_parameters_to_xlsx(request, analyses):
     """Download roughness parameters from given analyses as XLSX file.
 

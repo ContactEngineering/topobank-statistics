@@ -1,17 +1,20 @@
-from django.urls import path, re_path
+from django.urls import path
 from django.contrib.auth.decorators import login_required
 
-from .views import ExampleView
+from .functions import APP_NAME, VIZ_ROUGHNESS_PARAMETERS
+from .views import roughness_parameters_card_view
 
-# App name determines the internal name space, e.g. example can be references
-# as 'statistics:example'
-app_name = 'statistics'
-
+# App name determines the internal name space
+app_name = APP_NAME
 urlpatterns = [
-    # Define extra urls here
+    # POST
+    # * Triggers analyses if not yet running
+    # * Return state of analyses
+    # * Return plot configuration for finished analyses
+    # This is a post request because the request parameters are complex.
     path(
-        'example',  # just as example, will be accessible as 'plugins/topobank_statistics/example'
-        view=login_required(ExampleView.as_view()),
-        name='example'
+        f'card/{VIZ_ROUGHNESS_PARAMETERS}',
+        view=login_required(roughness_parameters_card_view),
+        name=f'card-{VIZ_ROUGHNESS_PARAMETERS}'
     ),
 ]

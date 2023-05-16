@@ -6,14 +6,13 @@ import tempfile
 import numpy as np
 import openpyxl
 
-from topobank.manager.utils import subjects_to_json
+from topobank.manager.utils import subjects_to_dict
 from topobank.manager.tests.utils import two_topos
 from topobank.analysis.models import AnalysisFunction
 from topobank.analysis.tests.utils import TopographyAnalysisFactory, Topography2DFactory, SurfaceFactory
-from topobank.analysis.registry import AnalysisRegistry
-from topobank.organizations.tests.utils import OrganizationFactory
 
-from ..views import RoughnessParametersCardView, NUM_SIGNIFICANT_DIGITS_RMS_VALUES
+from ..functions import APP_NAME, VIZ_ROUGHNESS_PARAMETERS
+from ..views import roughness_parameters_card_view, NUM_SIGNIFICANT_DIGITS_RMS_VALUES
 
 
 @pytest.mark.parametrize('file_format', ['txt', 'xlsx'])
@@ -24,11 +23,10 @@ def test_roughness_params_download_as_txt(client, two_topos, file_format, handle
 
     func = AnalysisFunction.objects.get(name='Roughness parameters')
 
-    import pickle
-    pickled_kwargs = pickle.dumps({})
+    kwargs = {}
 
-    ana1 = TopographyAnalysisFactory.create(subject=t1, function=func, kwargs=pickled_kwargs)
-    ana2 = TopographyAnalysisFactory.create(subject=t1, function=func, kwargs=pickled_kwargs)
+    ana1 = TopographyAnalysisFactory.create(subject=t1, function=func, kwargs=kwargs)
+    ana2 = TopographyAnalysisFactory.create(subject=t1, function=func, kwargs=kwargs)
 
     username = 'testuser'
     password = 'abcd$1234'
@@ -87,7 +85,7 @@ def test_roughness_params_download_as_txt(client, two_topos, file_format, handle
 @pytest.mark.urls('topobank_statistics.tests.urls')
 @pytest.mark.parametrize('template_flavor', ['list', 'detail'])
 @pytest.mark.django_db
-def test_roughness_params_rounded(rf, mocker, template_flavor, user_with_plugin):
+def test_roughness_params_rounded(api_rf, mocker, template_flavor, user_with_plugin, handle_usage_statistics):
 
     def myfunc(topography, *args, **kwargs):
         """Return some fake values for testing rounding"""
@@ -143,24 +141,15 @@ def test_roughness_params_rounded(rf, mocker, template_flavor, user_with_plugin)
     func = AnalysisFunction.objects.get(name='Roughness parameters')
     TopographyAnalysisFactory(subject=topo, function=func)
 
-    request = rf.post(reverse('analysis:card'), data={
+    request = api_rf.post('/plugins/topobank_statistics/card/roughness-parameters', data={
         'function_id': func.id,
-        'card_id': 'card',
-        'template_flavor': template_flavor,
-        'subjects_ids_json': subjects_to_json([topo]),
-    }, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        'subjects': subjects_to_dict([topo]),
+    }, format='json')
     request.user = topo.surface.creator
     request.session = {}
 
-    reg = AnalysisRegistry()
-    card_view_class = reg.get_card_view_class(reg.get_analysis_result_type_for_function_name(func.name))
-
-    assert card_view_class == RoughnessParametersCardView
-
-    card_view = card_view_class.as_view()
-    response = card_view(request)
+    response = roughness_parameters_card_view(request)
     assert response.status_code == 200
-    assert response.template_name == [f'topobank_statistics/roughnessparameters_card_{template_flavor}.html']
 
     # we want rounding to 5 digits
     assert NUM_SIGNIFICANT_DIGITS_RMS_VALUES == 5
@@ -220,7 +209,7 @@ def test_roughness_params_rounded(rf, mocker, template_flavor, user_with_plugin)
         }
     ]
 
-    assert response.context_data['table_data'] == exp_table_data
+    assert response.data['tableData'] == exp_table_data
 
     #
     # We do not render response here, because this causes problems
