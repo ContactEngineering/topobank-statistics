@@ -91,17 +91,12 @@ export default {
     methods: {
         updateCard() {
             /* Fetch JSON describing the card */
-            fetch(this.apiUrl, {
-                method: 'POST',
+            fetch(`${this.apiUrl}/${this.functionId}?subjects=${this.subjects}`, {
+                method: 'GET',
                 headers: {
                     'Accept': 'application/json',
-                    'Content-Type': 'application/json',
                     'X-CSRFToken': this.csrfToken
-                },
-                body: JSON.stringify({
-                    function_id: this.functionId,
-                    subjects: this.subjects
-                })
+                }
             })
                 .then(response => response.json())
                 .then(data => {

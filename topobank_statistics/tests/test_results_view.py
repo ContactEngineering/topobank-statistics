@@ -1,12 +1,10 @@
 import pytest
 
-from django.shortcuts import reverse
-
 import tempfile
 import numpy as np
 import openpyxl
 
-from topobank.manager.utils import subjects_to_dict
+from topobank.manager.utils import subjects_to_base64
 from topobank.manager.tests.utils import two_topos
 from topobank.analysis.models import AnalysisFunction
 from topobank.analysis.tests.utils import TopographyAnalysisFactory, Topography2DFactory, SurfaceFactory
@@ -141,10 +139,8 @@ def test_roughness_params_rounded(api_rf, mocker, template_flavor, user_with_plu
     func = AnalysisFunction.objects.get(name='Roughness parameters')
     TopographyAnalysisFactory(subject=topo, function=func)
 
-    request = api_rf.post('/plugins/topobank_statistics/card/roughness-parameters', data={
-        'function_id': func.id,
-        'subjects': subjects_to_dict([topo]),
-    }, format='json')
+    request = api_rf.get(f'/plugins/topobank_statistics/card/roughness-parameters/{func.id}',
+                         {'function_id': func.id, 'subjects': subjects_to_base64([topo])})
     request.user = topo.surface.creator
     request.session = {}
 
