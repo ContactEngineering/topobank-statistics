@@ -13,7 +13,7 @@ NUM_SIGNIFICANT_DIGITS_RMS_VALUES = 5
 
 
 @api_view(['GET'])
-def roughness_parameters_card_view(request):
+def roughness_parameters_card_view(request, **kwargs):
     def _convert_value(v):
         if v is not None:
             if math.isnan(v):
@@ -27,7 +27,7 @@ def roughness_parameters_card_view(request):
                 v = round_to_significant_digits(float(v), NUM_SIGNIFICANT_DIGITS_RMS_VALUES)
         return v
 
-    controller = AnalysisController.from_request(request)
+    controller = AnalysisController.from_request(request, **kwargs)
 
     #
     # Basic context data

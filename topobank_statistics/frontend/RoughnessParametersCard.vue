@@ -49,14 +49,14 @@ export default {
     },
     data() {
         return {
-            analyses: [],
-            analysesAvailable: false,
-            columnDefs: [
+            _analyses: [],
+            _analysesAvailable: false,
+            _columnDefs: [
                 // Indicate that first column contains HTML
                 // to have HTML tags removed for sorting/filtering
                 {targets: 0, type: 'html'}
             ],
-            columns: [
+            _columns: [
                 {
                     title: 'Measurement',
                     render: function (data, type, row) {
@@ -75,9 +75,9 @@ export default {
                 },
                 {data: 'unit', title: 'Unit'},
             ],
-            dois: [],
-            data: [],
-            title: "Roughness parameters"
+            _dois: [],
+            _data: [],
+            _title: "Roughness parameters"
         }
     },
     mounted() {
@@ -85,7 +85,7 @@ export default {
     },
     computed: {
         analysisIds() {
-            return this.analyses.map(a => a.id).join();
+            return this._analyses.map(a => a.id).join();
         }
     },
     methods: {
@@ -100,18 +100,18 @@ export default {
             })
                 .then(response => response.json())
                 .then(data => {
-                    this.analyses = data.analyses;
+                    this._analyses = data.analyses;
                     /** replace null in value with NaN
                      * This is needed because we cannot pass NaN through JSON without
                      * extra libraries, so it is passed as null (workaround) */
-                    this.data = data.tableData.map(x => {
+                    this._data = data.tableData.map(x => {
                         if (x['value'] === null) {
                             x['value'] = NaN;
                         }
                         return x
                     });
-                    this.dois = data.dois;
-                    this.analysesAvailable = true;
+                    this._dois = data.dois;
+                    this._analysesAvailable = true;
                 });
         }
     }
@@ -122,10 +122,13 @@ export default {
     <div class="card search-result-card">
         <div class="card-header">
             <div class="btn-group btn-group-sm float-right">
-                <tasks-button :analyses="analyses"
+                <tasks-button v-if="_analysesAvailable"
+                              :analyses="_analyses"
                               :csrf-token="csrfToken">
                 </tasks-button>
-                <button @click="updateCard" class="btn btn-default float-right ml-1">
+                <button v-if="_analysesAvailable"
+                        @click="updateCard"
+                        class="btn btn-default float-right ml-1">
                     <i class="fa fa-redo"></i>
                 </button>
                 <card-expand-button v-if="!enlarged"
@@ -136,23 +139,23 @@ export default {
                 </card-expand-button>
             </div>
             <a class="text-dark" href="#" data-toggle="collapse" :data-target="`#sidebar-${uid}`">
-                <h5><i class="fa fa-bars"></i> {{ title }}</h5>
+                <h5><i class="fa fa-bars"></i> {{ _title }}</h5>
             </a>
         </div>
         <div class="card-body">
-            <div v-if="!analysesAvailable" class="tab-content">
+            <div v-if="!_analysesAvailable" class="tab-content">
                 <span class="spinner"></span>
                 <div>Please wait...</div>
             </div>
 
-            <div v-if="analysesAvailable" class="tab-content">
+            <div v-if="_analysesAvailable" class="tab-content">
                 <div class="tab-pane show active" role="tabpanel" aria-label="Tab showing a plot">
                     <data-table class="table table-striped table-bordered"
-                                :column-defs="columnDefs"
-                                :columns="columns"
-                                :data="data"
-                                responsive="yes"
-                                scroll-x="yes">
+                                 :column-defs="_columnDefs"
+                                 :columns="_columns"
+                                 :data="_data"
+                                 responsive="yes"
+                                 scroll-x="yes">
                     </data-table>
                 </div>
             </div>
@@ -162,7 +165,7 @@ export default {
             <nav class="card-header navbar navbar-toggleable-xl bg-light flex-column align-items-start h-100">
                 <ul class="flex-column navbar-nav">
                     <a class="text-dark" href="#" data-toggle="collapse" :data-target="`#sidebar-${uid}`">
-                        <h5><i class="fa fa-bars"></i> {{ title }}</h5>
+                        <h5><i class="fa fa-bars"></i> {{ _title }}</h5>
                     </a>
                     <li class="nav-item mb-1 mt-1">
                         Download
@@ -177,7 +180,7 @@ export default {
                     </li>
                     <li class="nav-item mb-1 mt-1">
                         <a href="#" data-toggle="modal" :data-target="`#bibliography-modal-${uid}`"
-                           class="btn btn-default  w-100">
+                           class="btn btn-default w-100">
                             Bibliography
                         </a>
                     </li>
@@ -187,6 +190,6 @@ export default {
     </div>
     <bibliography-modal
             :id="`bibliography-modal-${uid}`"
-            :dois="dois">
+            :dois="_dois">
     </bibliography-modal>
 </template>
