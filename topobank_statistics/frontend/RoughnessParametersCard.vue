@@ -21,12 +21,12 @@ export default {
         DataTable,
         TasksButton
     },
+    inject: ['csrfToken'],
     props: {
         apiUrl: {
             type: String,
             default: '/plugins/topobank_statistics/card/roughness-parameters'
         },
-        csrfToken: String,
         detailUrl: {
             type: String,
             default: '/analysis/html/detail/'
@@ -122,8 +122,7 @@ export default {
         <div class="card-header">
             <div class="btn-group btn-group-sm float-right">
                 <tasks-button v-if="_analyses !== null && _analyses.length > 0"
-                              :analyses="_analyses"
-                              :csrf-token="csrfToken">
+                              :analyses="_analyses">
                 </tasks-button>
                 <button v-if="_analyses !== null && _analyses.length > 0"
                         @click="updateCard"
