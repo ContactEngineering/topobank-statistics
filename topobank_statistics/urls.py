@@ -1,5 +1,4 @@
 from django.urls import path
-from django.contrib.auth.decorators import login_required
 
 from .functions import APP_NAME, VIZ_ROUGHNESS_PARAMETERS
 from .views import roughness_parameters_card_view
@@ -14,7 +13,7 @@ urlpatterns = [
     # This is a post request because the request parameters are complex.
     path(
         f'card/{VIZ_ROUGHNESS_PARAMETERS}/<int:function_id>',
-        view=login_required(roughness_parameters_card_view),
+        view=roughness_parameters_card_view,
         name=f'card-{VIZ_ROUGHNESS_PARAMETERS}'
     ),
 ]
