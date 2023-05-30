@@ -1,5 +1,10 @@
 # Changelog for plugin *topobank-statistics*
 
+## 1.1.0 (not yet published)
+
+- ENH: Unified single page application for analyses, including rewritten
+  task status
+
 ## 1.0.2 (2023-04-06)
 
 - BUG: Reverted to old contact mechanics card view
