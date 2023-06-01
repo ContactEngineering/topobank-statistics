@@ -4,6 +4,8 @@
 
 - ENH: Unified single page application for analyses, including rewritten
   task status
+- ENH: Webpack based bundling (for the analysis app)
+- ENH: Upgrade to Vue 3
 
 ## 1.0.2 (2023-04-06)
 
