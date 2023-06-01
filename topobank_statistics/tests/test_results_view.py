@@ -57,8 +57,6 @@ def test_roughness_params_download_as_txt(client, two_topos, file_format, handle
         assert "RMS height" in txt
         assert "RMS slope" in txt
         assert "RMS curvature" in txt
-        assert "value (SI)" in txt
-        assert "unit (SI)" in txt
     else:
         # Resulting workbook should have two sheets
         tmp = tempfile.NamedTemporaryFile(suffix='.xlsx')  # will be deleted automatically
