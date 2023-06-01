@@ -6,6 +6,7 @@
   task status
 - ENH: Webpack based bundling (for the analysis app)
 - ENH: Upgrade to Vue 3
+- MAINT: Easier to use download format for roughness parameters (#4)
 
 ## 1.0.2 (2023-04-06)
 
