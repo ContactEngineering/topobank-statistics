@@ -459,9 +459,7 @@ def test_roughness_parameters(simple_linear_2d_topography):
             'from': 'profile (1D)',
             'symbol': 'Rq',
             'value': 0,
-            'unit': unit,
-            'value (SI)': 0,
-            'unit (SI)': 'm'
+            'unit': unit
         },
         {
             'quantity': 'RMS height',
@@ -469,9 +467,7 @@ def test_roughness_parameters(simple_linear_2d_topography):
             'from': 'profile (1D)',
             'symbol': 'Rq',
             'value': 5.74456264,
-            'unit': unit,
-            'value (SI)': ureg.convert(5.74456264, unit, 'm'),
-            'unit (SI)': 'm'
+            'unit': unit
         },
         {
             'quantity': 'RMS height',
@@ -479,9 +475,7 @@ def test_roughness_parameters(simple_linear_2d_topography):
             'from': 'area (2D)',
             'symbol': 'Sq',
             'value': np.sqrt(33),
-            'unit': unit,
-            'value (SI)': ureg.convert(np.sqrt(33), unit, 'm'),
-            'unit (SI)': 'm'
+            'unit': unit
         },
         {
             'quantity': 'RMS curvature',
@@ -489,9 +483,7 @@ def test_roughness_parameters(simple_linear_2d_topography):
             'from': 'profile (1D)',
             'symbol': '',
             'value': 0,
-            'unit': inverse_unit,
-            'value (SI)': 0,
-            'unit (SI)': '1/m'
+            'unit': inverse_unit
         },
         {
             'quantity': 'RMS curvature',
@@ -499,9 +491,7 @@ def test_roughness_parameters(simple_linear_2d_topography):
             'from': 'area (2D)',
             'symbol': '',
             'value': 0,
-            'unit': inverse_unit,
-            'value (SI)': 0,
-            'unit (SI)': '1/m'
+            'unit': inverse_unit
         },
         {
             'quantity': 'RMS curvature',
@@ -509,9 +499,7 @@ def test_roughness_parameters(simple_linear_2d_topography):
             'from': 'profile (1D)',
             'symbol': '',
             'value': 0,
-            'unit': inverse_unit,
-            'value (SI)': 0,
-            'unit (SI)': '1/m'
+            'unit': inverse_unit
         },
         {
             'quantity': 'RMS slope',
@@ -519,9 +507,7 @@ def test_roughness_parameters(simple_linear_2d_topography):
             'from': 'profile (1D)',
             'symbol': 'R&Delta;q',
             'value': 0,
-            'unit': 1,
-            'value (SI)': 0,
-            'unit (SI)': '1'
+            'unit': 1
         },
         {
             'quantity': 'RMS slope',
@@ -529,9 +515,7 @@ def test_roughness_parameters(simple_linear_2d_topography):
             'from': 'profile (1D)',
             'symbol': 'R&Delta;q',
             'value': 2,
-            'unit': 1,
-            'value (SI)': 0,
-            'unit (SI)': '1'
+            'unit': 1
         },
         {
             'quantity': 'RMS gradient',
@@ -539,9 +523,7 @@ def test_roughness_parameters(simple_linear_2d_topography):
             'from': 'area (2D)',
             'symbol': '',
             'value': 2,
-            'unit': 1,
-            'value (SI)': 0,
-            'unit (SI)': '1'
+            'unit': 1
         },
         {
             'quantity': 'Bandwidth: lower bound',
@@ -549,9 +531,7 @@ def test_roughness_parameters(simple_linear_2d_topography):
             'from': 'area (2D)',
             'symbol': '',
             'value': 1.0,
-            'unit': unit,
-            'value (SI)': 0,
-            'unit (SI)': 'm'
+            'unit': unit
         },
         {
             'quantity': 'Bandwidth: upper bound',
@@ -559,9 +539,7 @@ def test_roughness_parameters(simple_linear_2d_topography):
             'from': 'area (2D)',
             'symbol': '',
             'value': 7.5,
-            'unit': unit,
-            'value (SI)': ureg.convert(7.5, unit, 'm'),
-            'unit (SI)': 'm'
+            'unit': unit
         },
     ]
 
