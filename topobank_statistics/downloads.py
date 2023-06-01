@@ -68,7 +68,7 @@ def download_roughness_parameters_to_txt(request, analyses):
         result = analysis.result
         topography = analysis.subject
         for row in result:
-            v = ureg.Quantity(row['value'], row['unit'])
+            v = ureg.Quantity(row['value'], 'dimensionless' if row['unit'] == 1 else row['unit'])
             v_si = v.to_base_units()  # Convert to SI units
             data.append([topography.surface.name,
                          topography.name,
@@ -118,6 +118,10 @@ def download_roughness_parameters_to_xlsx(request, analyses):
     """
     analyses = [a for a in analyses if a.is_topography_related]
 
+    # Unit conversion
+    ureg = pint.UnitRegistry()
+    ureg.default_format = '~P'
+
     f = io.BytesIO()
     excel = pd.ExcelWriter(f)
 
@@ -125,12 +129,16 @@ def download_roughness_parameters_to_xlsx(request, analyses):
     for analysis in analyses:
         topo = analysis.subject
         for row in analysis.result:
+            v = ureg.Quantity(row['value'], 'dimensionless' if row['unit'] == 1 else row['unit'])
+            v_si = v.to_base_units()  # Convert to SI units
             row['digital surface twin'] = topo.surface.name
             row['measurement'] = topo.name
+            row['value (SI)'] = v_si.magnitude
+            row['unit (SI)'] = str(v_si.units)
             data.append(row)
 
     roughness_df = pd.DataFrame(data, columns=['digital surface twin', 'measurement', 'quantity', 'direction',
-                                               'from', 'symbol', 'value', 'unit'])
+                                               'from', 'symbol', 'value', 'unit', 'value (SI)', 'unit (SI)'])
     roughness_df.replace(r'&Delta;', 'Δ', inplace=True, regex=True)  # we want a real greek delta
     roughness_df.to_excel(excel, sheet_name="Roughness parameters", index=False)
     info_df = analyses_meta_data_dataframe(analyses, request)
