@@ -73,8 +73,8 @@ def test_roughness_params_download_as_txt(client, two_topos, file_format, handle
 
         all_values_list = list(np.array(list(ws.values)).flatten())
 
-        assert 'RMS height/Rq - profile (1D) - x (m)' in all_values_list
-        assert 'RMS curvature - profile (1D) - y (1/m)' in all_values_list
+        assert 'Rq [RMS height, profile (1D), x] (m)' in all_values_list
+        assert 'RMS curvature, profile (1D), y (1/m)' in all_values_list
 
         xlsx.get_sheet_by_name("INFORMATION")
 
