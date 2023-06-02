@@ -27,29 +27,35 @@ def roughness_parameters_data_frame(analyses):
 
         row = {
             'Digital surface twin': topography.surface.name,
-            'Measurement': topography.name
+            'Measurement': topography.name,
+            'Creator': topography.creator,
+            'Instrument name': topography.instrument_name,
+            'Instrument type': topography.instrument_type,
+            'Instrument parameters': topography.instrument_parameters
         }
         for quantity in result:
             v = ureg.Quantity(quantity['value'], 'dimensionless' if quantity['unit'] == 1 else quantity['unit'])
             v_si = v.to_base_units()  # Convert to SI units
 
             quantity_header = quantity['quantity']
-            if quantity['symbol']:
-                quantity_header += '/' + quantity['symbol']
             if quantity['from']:
-                quantity_header += ' - ' +  quantity['from']
+                quantity_header += ', ' +  quantity['from']
             if quantity['direction']:
-                quantity_header += ' - ' +  quantity['direction']
+                quantity_header += ', ' +  quantity['direction']
+            if quantity['symbol']:
+                quantity_header = quantity['symbol'].replace(r'&Delta;', 'Δ') + ' [' + quantity_header + ']'
             quantity_header += f' ({v_si.units})'
 
             row |= {quantity_header: v_si.magnitude}
         data += [row]
 
     # Return data frame
-    return pd.DataFrame(data)
+    df = pd.DataFrame(data)
+
+    return df
 
 
-@register_download_function(VIZ_ROUGHNESS_PARAMETERS, 'results', 'txt')
+@register_download_function(VIZ_ROUGHNESS_PARAMETERS, 'results', 'csv')
 def download_roughness_parameters_to_txt(request, analyses):
     """Download roughness parameters from given analyses as CSV file.
 
@@ -98,12 +104,12 @@ def download_roughness_parameters_to_txt(request, analyses):
 
     f.write('# Table of roughness parameters\n')
     df = roughness_parameters_data_frame(analyses)
-    df.to_csv(f, index=False)
+    df.to_csv(f, sep=';', index=False)
     f.write('\n')
 
     # Prepare response object.
     response = HttpResponse(f.getvalue(), content_type='application/text')
-    filename = '{}.txt'.format(analysis.function.name.replace(' ', '_'))
+    filename = '{}.csv'.format(analysis.function.name.replace(' ', '_'))
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
 
     # Close file and return response.
@@ -136,7 +142,6 @@ def download_roughness_parameters_to_xlsx(request, analyses):
     excel = pd.ExcelWriter(f)
 
     roughness_df = roughness_parameters_data_frame(analyses)
-    roughness_df.replace(r'&Delta;', 'Δ', inplace=True, regex=True)  # we want a real greek delta
     roughness_df.to_excel(excel, sheet_name="Roughness parameters", index=False)
     info_df = analyses_meta_data_dataframe(analyses, request)
     info_df.to_excel(excel, sheet_name='INFORMATION', index=False)
