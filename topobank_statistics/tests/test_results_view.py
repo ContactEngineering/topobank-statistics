@@ -73,9 +73,8 @@ def test_roughness_params_download_as_txt(client, two_topos, file_format, handle
 
         all_values_list = list(np.array(list(ws.values)).flatten())
 
-        assert 'RMS height' in all_values_list
-        assert 'RMS slope' in all_values_list
-        assert 'RMS curvature' in all_values_list
+        assert 'RMS height/Rq - profile (1D) - x (m)' in all_values_list
+        assert 'RMS curvature - profile (1D) - y (1/m)' in all_values_list
 
         xlsx.get_sheet_by_name("INFORMATION")
 
@@ -130,7 +129,8 @@ def test_roughness_params_rounded(api_rf, mocker, template_flavor, user_with_plu
             }
         ]
 
-    m = mocker.patch('topobank.analysis.registry.AnalysisFunctionImplementation.python_function')
+    m = mocker.patch('topobank.analysis.registry.AnalysisFunctionImplementation.python_function',
+                     new_callable=mocker.PropertyMock)
     m.return_value = myfunc
 
     surf = SurfaceFactory(creator=user_with_plugin)

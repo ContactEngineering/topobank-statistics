@@ -4,7 +4,9 @@ Place here all download function and register with @register_download_function
 import io
 
 import pandas as pd
+import pint
 from django.http import HttpResponse
+from django.utils.text import slugify
 
 from topobank.analysis.registry import register_download_function
 from topobank.analysis.downloads import publications_urls, analyses_meta_data_dataframe, analysis_header_for_txt_file
@@ -12,7 +14,48 @@ from topobank.analysis.downloads import publications_urls, analyses_meta_data_da
 from .functions import VIZ_ROUGHNESS_PARAMETERS
 
 
-@register_download_function(VIZ_ROUGHNESS_PARAMETERS, 'results', 'txt')
+def roughness_parameters_data_frame(analyses):
+    # Unit conversion
+    ureg = pint.UnitRegistry()
+    ureg.default_format = '~P'
+
+    # Collect data
+    data = []
+    for analysis in analyses:
+        result = analysis.result
+        topography = analysis.subject
+
+        row = {
+            'Digital surface twin': topography.surface.name,
+            'Measurement': topography.name,
+            'Creator': topography.creator,
+            'Instrument name': topography.instrument_name,
+            'Instrument type': topography.instrument_type,
+            'Instrument parameters': topography.instrument_parameters
+        }
+        for quantity in result:
+            v = ureg.Quantity(quantity['value'], 'dimensionless' if quantity['unit'] == 1 else quantity['unit'])
+            v_si = v.to_base_units()  # Convert to SI units
+
+            quantity_header = quantity['quantity']
+            if quantity['from']:
+                quantity_header += ', ' +  quantity['from']
+            if quantity['direction']:
+                quantity_header += ', ' +  quantity['direction']
+            if quantity['symbol']:
+                quantity_header = quantity['symbol'].replace(r'&Delta;', 'Δ') + ' [' + quantity_header + ']'
+            quantity_header += f' ({v_si.units})'
+
+            row |= {quantity_header: v_si.magnitude}
+        data += [row]
+
+    # Return data frame
+    df = pd.DataFrame(data)
+
+    return df
+
+
+@register_download_function(VIZ_ROUGHNESS_PARAMETERS, 'results', 'csv')
 def download_roughness_parameters_to_txt(request, analyses):
     """Download roughness parameters from given analyses as CSV file.
 
@@ -59,27 +102,14 @@ def download_roughness_parameters_to_txt(request, analyses):
 
         f.write(analysis_header_for_txt_file(analysis))
 
-        result = analysis.result
-        topography = analysis.subject
-        for row in result:
-            data.append([topography.surface.name,
-                         topography.name,
-                         row['quantity'],
-                         row['direction'] if row['direction'] else '',
-                         row['from'] if row['from'] else '',
-                         row['symbol'] if row['symbol'] else '',
-                         row['value'],
-                         row['unit']])
-
     f.write('# Table of roughness parameters\n')
-    df = pd.DataFrame(data, columns=['digital surface twin', 'measurement', 'quantity', 'direction',
-                                     'from', 'symbol', 'value', 'unit'])
-    df.to_csv(f, index=False)
+    df = roughness_parameters_data_frame(analyses)
+    df.to_csv(f, sep=';', index=False)
     f.write('\n')
 
     # Prepare response object.
     response = HttpResponse(f.getvalue(), content_type='application/text')
-    filename = '{}.txt'.format(analysis.function.name.replace(' ', '_'))
+    filename = '{}.csv'.format(analysis.function.name.replace(' ', '_'))
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
 
     # Close file and return response.
@@ -111,17 +141,7 @@ def download_roughness_parameters_to_xlsx(request, analyses):
     f = io.BytesIO()
     excel = pd.ExcelWriter(f)
 
-    data = []
-    for analysis in analyses:
-        topo = analysis.subject
-        for row in analysis.result:
-            row['digital surface twin'] = topo.surface.name
-            row['measurement'] = topo.name
-            data.append(row)
-
-    roughness_df = pd.DataFrame(data, columns=['digital surface twin', 'measurement', 'quantity', 'direction',
-                                               'from', 'symbol', 'value', 'unit'])
-    roughness_df.replace(r'&Delta;', 'Δ', inplace=True, regex=True)  # we want a real greek delta
+    roughness_df = roughness_parameters_data_frame(analyses)
     roughness_df.to_excel(excel, sheet_name="Roughness parameters", index=False)
     info_df = analyses_meta_data_dataframe(analyses, request)
     info_df.to_excel(excel, sheet_name='INFORMATION', index=False)
@@ -130,7 +150,7 @@ def download_roughness_parameters_to_xlsx(request, analyses):
     # Prepare response object.
     response = HttpResponse(f.getvalue(),
                             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    filename = '{}.xlsx'.format(analysis.function.name.replace(' ', '_'))
+    filename = f'{slugify(analyses[0].function.name)}.xlsx'
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
 
     # Close file and return response.

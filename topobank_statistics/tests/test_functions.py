@@ -1,5 +1,7 @@
 import numpy as np
 import math
+
+import pint
 import pytest
 from dataclasses import dataclass
 from numpy.testing import assert_allclose
@@ -7,7 +9,6 @@ from numpy.testing import assert_allclose
 from SurfaceTopography import Topography, NonuniformLineScan
 
 from topobank.analysis.models import AnalysisFunction
-from topobank.analysis.functions import IncompatibleTopographyException
 from topobank_statistics.functions import height_distribution, slope_distribution, curvature_distribution, \
     power_spectrum, power_spectrum_for_surface, autocorrelation, autocorrelation_for_surface, variable_bandwidth, \
     variable_bandwidth_for_surface, scale_dependent_slope, scale_dependent_slope_for_surface, roughness_parameters
@@ -448,6 +449,9 @@ def test_roughness_parameters(simple_linear_2d_topography):
     topography = FakeTopographyModel(simple_linear_2d_topography)
     result = roughness_parameters(topography)
 
+    ureg = pint.UnitRegistry()
+    ureg.default_format = '~P'
+
     expected = [
         {
             'quantity': 'RMS height',
@@ -479,7 +483,7 @@ def test_roughness_parameters(simple_linear_2d_topography):
             'from': 'profile (1D)',
             'symbol': '',
             'value': 0,
-            'unit': inverse_unit,
+            'unit': inverse_unit
         },
         {
             'quantity': 'RMS curvature',
@@ -487,7 +491,7 @@ def test_roughness_parameters(simple_linear_2d_topography):
             'from': 'area (2D)',
             'symbol': '',
             'value': 0,
-            'unit': inverse_unit,
+            'unit': inverse_unit
         },
         {
             'quantity': 'RMS curvature',
@@ -495,7 +499,7 @@ def test_roughness_parameters(simple_linear_2d_topography):
             'from': 'profile (1D)',
             'symbol': '',
             'value': 0,
-            'unit': inverse_unit,
+            'unit': inverse_unit
         },
         {
             'quantity': 'RMS slope',
@@ -503,7 +507,7 @@ def test_roughness_parameters(simple_linear_2d_topography):
             'from': 'profile (1D)',
             'symbol': 'R&Delta;q',
             'value': 0,
-            'unit': 1,
+            'unit': 1
         },
         {
             'quantity': 'RMS slope',
@@ -511,7 +515,7 @@ def test_roughness_parameters(simple_linear_2d_topography):
             'from': 'profile (1D)',
             'symbol': 'R&Delta;q',
             'value': 2,
-            'unit': 1,
+            'unit': 1
         },
         {
             'quantity': 'RMS gradient',
@@ -519,7 +523,7 @@ def test_roughness_parameters(simple_linear_2d_topography):
             'from': 'area (2D)',
             'symbol': '',
             'value': 2,
-            'unit': 1,
+            'unit': 1
         },
         {
             'quantity': 'Bandwidth: lower bound',
@@ -527,7 +531,7 @@ def test_roughness_parameters(simple_linear_2d_topography):
             'from': 'area (2D)',
             'symbol': '',
             'value': 1.0,
-            'unit': unit,
+            'unit': unit
         },
         {
             'quantity': 'Bandwidth: upper bound',
@@ -535,7 +539,7 @@ def test_roughness_parameters(simple_linear_2d_topography):
             'from': 'area (2D)',
             'symbol': '',
             'value': 7.5,
-            'unit': unit,
+            'unit': unit
         },
     ]
 
