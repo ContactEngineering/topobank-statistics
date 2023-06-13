@@ -3,7 +3,7 @@
 import {v4 as uuid4} from 'uuid';
 
 import DataTable from 'datatables.net-vue3';
-import DataTablesLib from 'datatables.net-bs4';
+import DataTablesLib from 'datatables.net-bs5';
 
 DataTable.use(DataTablesLib);
 
@@ -120,20 +120,20 @@ export default {
 <template>
     <div class="card search-result-card">
         <div class="card-header">
-            <div class="btn-group btn-group-sm float-right">
+            <div class="btn-group btn-group-sm float-end">
                 <tasks-button v-if="_analyses !== null && _analyses.length > 0"
                               :analyses="_analyses">
                 </tasks-button>
                 <button v-if="_analyses !== null && _analyses.length > 0"
                         @click="updateCard"
-                        class="btn btn-default float-right ml-1">
+                        class="btn btn-default float-end ml-1">
                     <i class="fa fa-redo"></i>
                 </button>
                 <card-expand-button v-if="!enlarged"
                                     :detail-url="detailUrl"
                                     :function-id="functionId"
                                     :subjects="subjects"
-                                    class="btn-group btn-group-sm float-right">
+                                    class="btn-group btn-group-sm float-end">
                 </card-expand-button>
             </div>
             <h5 v-if="_analyses === null"
