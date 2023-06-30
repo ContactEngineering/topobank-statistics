@@ -178,10 +178,10 @@ export default {
                     <li class="nav-item mb-1 mt-1">
                         Download
                         <div class="btn-group ms-1" role="group" aria-label="Download formats">
-                            <a :href="`/analysis/download/${analysisIds}/txt`"
+                            <a :href="`/analysis/download/${analysisIds}/csv`"
                                class="btn btn-default"
                                @click="_sidebarVisible=false">
-                                TXT
+                                CSV
                             </a>
                             <a :href="`/analysis/download/${analysisIds}/xlsx`"
                                class="btn btn-default"

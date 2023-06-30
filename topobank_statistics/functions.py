@@ -591,9 +591,9 @@ def roughness_parameters(topography, progress_recorder=None, storage_prefix=None
 
     Parameters
     ----------
-    topography: topobank.manager.models.Topography
-    progress_recorder: celery_progress.backend.ProgressRecorder or None
-    storage_prefix: str or None
+    topography : topobank.manager.models.Topography
+    progress_recorder : ProgressRecorder or None
+    storage_prefix : str or None
 
     Returns
     -------

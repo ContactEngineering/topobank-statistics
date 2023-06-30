@@ -1,5 +1,13 @@
 # Changelog for plugin *topobank-statistics*
 
+## 1.1.0 (2023-06-11)
+
+- ENH: Unified single page application for analyses, including rewritten
+  task status
+- ENH: Webpack based bundling (for the analysis app)
+- ENH: Upgrade to Vue 3
+- MAINT: Easier to use download format for roughness parameters (#4)
+
 ## 1.0.2 (2023-04-06)
 
 - BUG: Reverted to old contact mechanics card view
