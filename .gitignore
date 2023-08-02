@@ -324,11 +324,6 @@ tags
 ### VirtualEnv template
 # Virtualenv
 # http://iamzed.com/2009/05/07/a-primer-on-virtualenv/
-[Bb]in
-[Ii]nclude
-[Ll]ib
-[Ll]ib64
-[Ss]cripts
 pyvenv.cfg
 pip-selfcheck.json
 
@@ -346,12 +341,16 @@ topobank/media/
 topobank.db
 .pytest_cache/
 
-# The following files contain password and should be generated manally from .template files
+# The following files contain password and should be generated manully from .template files or commands
 .envs/.local/.django
+.envs/.local/.pypi-authfile
 .envs/.production/.django
 .envs/.production/.django.testserver
 .envs/.production/.postgres
 orcid.yaml
+
+# Locally generated pip packages
+docker/local/django/pip-packages/*
 
 # temporary files from soffice
 .~lock.*#
@@ -361,4 +360,5 @@ orcid.yaml
 /media/**/*
 !/stuff/usage_statistics.xlsx
 data/
+.envs/.local/.pypi-authfile
 
