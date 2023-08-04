@@ -26,7 +26,6 @@ export default {
             type: String,
             default: '/plugins/topobank_statistics/card/roughness-parameters'
         },
-        csrfToken: String,
         detailUrl: {
             type: String,
             default: '/analysis/html/detail/'
@@ -47,6 +46,7 @@ export default {
         },
         xlsxDownloadUrl: String
     },
+    inject: ['csrfToken'],
     data() {
         return {
             _analyses: null,
