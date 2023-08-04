@@ -1,5 +1,9 @@
 # Changelog for plugin *topobank-statistics*
 
+## 1.1.1 (2023-08-04)
+
+- MAINT: Unified CSRF injection
+
 ## 1.1.0 (2023-06-11)
 
 - ENH: Unified single page application for analyses, including rewritten
