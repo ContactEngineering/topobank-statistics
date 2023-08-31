@@ -34,7 +34,7 @@ def roughness_parameters_card_view(request, **kwargs):
     #
     context = {
         'dois': controller.dois,
-        'analyses': controller.get_analysis_ids()
+        'analyses': controller.to_representation(request=request)
     }
 
     #
