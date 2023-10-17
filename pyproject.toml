@@ -35,4 +35,7 @@ classifiers = [
 homepage = 'https://contact.engineering'
 repository = 'https://github.com/ContactEngineering/topobank-statistics'
 
+[tool.setuptools]
+py-modules = ['topobank_statistics']
+
 [tool.setuptools_scm]
