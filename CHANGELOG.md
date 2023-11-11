@@ -1,5 +1,9 @@
 # Changelog for plugin *topobank-statistics*
 
+## 1.2.0 (not yet released)
+
+- MAINT: Update to Bootstrap 5
+
 ## 1.1.0 (2023-06-11)
 
 - ENH: Unified single page application for analyses, including rewritten
