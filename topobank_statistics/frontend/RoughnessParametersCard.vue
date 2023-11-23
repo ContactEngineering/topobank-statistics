@@ -47,6 +47,7 @@ export default {
         },
         xlsxDownloadUrl: String
     },
+    inject: ['csrfToken'],
     data() {
         return {
             _analyses: null,
