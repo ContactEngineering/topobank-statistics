@@ -1,6 +1,8 @@
-<script>
+<script setup>
 
+import axios from "axios";
 import {v4 as uuid4} from 'uuid';
+import {computed, onMounted, ref} from "vue";
 
 import DataTable from 'datatables.net-vue3';
 import DataTablesLib from 'datatables.net-bs5';
@@ -13,109 +15,101 @@ import TasksButton from 'topobank/analysis/TasksButton.vue';
 
 import {formatExponential} from "topobank/utils/formatting";
 
-export default {
-    name: 'roughness-parameters-card',
-    components: {
-        BibliographyModal,
-        CardExpandButton,
-        DataTable,
-        TasksButton
+const props = defineProps({
+    apiUrl: {
+        type: String,
+        default: '/plugins/topobank_statistics/card/roughness-parameters'
     },
-    inject: ['csrfToken'],
-    props: {
-        apiUrl: {
-            type: String,
-            default: '/plugins/topobank_statistics/card/roughness-parameters'
-        },
-        detailUrl: {
-            type: String,
-            default: '/analysis/html/detail/'
-        },
-        enlarged: {
-            type: Boolean,
-            default: false
-        },
-        functionId: Number,
-        functionName: String,
-        subjects: String,
-        txtDownloadUrl: String,
-        uid: {
-            type: String,
-            default() {
-                return uuid4();
+    detailUrl: {
+        type: String,
+        default: '/analysis/html/detail/'
+    },
+    enlarged: {
+        type: Boolean,
+        default: false
+    },
+    functionId: Number,
+    functionName: String,
+    subjects: String,
+    txtDownloadUrl: String,
+    uid: {
+        type: String,
+        default() {
+            return uuid4();
+        }
+    },
+    xlsxDownloadUrl: String
+});
+
+// Displayed data
+const _analyses = ref(null);
+const _columnDefs = ref([
+    // Indicate that first column contains HTML
+    // to have HTML tags removed for sorting/filtering
+    {targets: 0, type: 'html'}
+]);
+const _columns = ref([
+    {
+        title: 'Measurement',
+        render: function (data, type, row) {
+            let name = row.topography_name;
+            return `<a target="_blank" title="${name}" href="${row.topography_url}">${name}</a>`;
+        }
+    },
+    {data: 'quantity', title: 'Quantity'},
+    {data: 'from', title: 'From'},
+    {data: 'symbol', title: '<span title="Symbol according to ASME B46.1">Sym. 🛈</span>'},
+    {data: 'direction', title: 'Direct.'},
+    {
+        data: 'value', title: 'Value', render: function (x) {
+            return formatExponential(x, 5);
+        }
+    },
+    {data: 'unit', title: 'Unit'},
+]);
+const _dois = ref([]);
+const _data = ref([]);
+
+// GUI logic
+const _sidebarVisible = ref(false);
+const _title = ref("Roughness parameters");
+
+// Current task status
+let _nbRunningOrPending = 0;
+
+onMounted(() => {
+    updateCard();
+});
+
+const analysisIds = computed(() => {
+    return _analyses.value.map(a => a.id).join();
+});
+
+function updateCard() {
+    /* Fetch JSON describing the card */
+    axios.get(`${props.apiUrl}/${props.functionId}?subjects=${props.subjects}`).then(response => {
+        _analyses.value = response.data.analyses;
+        /** replace null in value with NaN
+         * This is needed because we cannot pass NaN through JSON without
+         * extra libraries, so it is passed as null (workaround) */
+        _data.value = response.data.tableData.map(x => {
+            if (x['value'] === null) {
+                x['value'] = NaN;
             }
-        },
-        xlsxDownloadUrl: String
-    },
-    inject: ['csrfToken'],
-    data() {
-        return {
-            _analyses: null,
-            _columnDefs: [
-                // Indicate that first column contains HTML
-                // to have HTML tags removed for sorting/filtering
-                {targets: 0, type: 'html'}
-            ],
-            _columns: [
-                {
-                    title: 'Measurement',
-                    render: function (data, type, row) {
-                        let name = row.topography_name;
-                        return `<a target="_blank" title="${name}" href="${row.topography_url}">${name}</a>`;
-                    }
-                },
-                {data: 'quantity', title: 'Quantity'},
-                {data: 'from', title: 'From'},
-                {data: 'symbol', title: '<span title="Symbol according to ASME B46.1">Sym. 🛈</span>'},
-                {data: 'direction', title: 'Direct.'},
-                {
-                    data: 'value', title: 'Value', render: function (x) {
-                        return formatExponential(x, 5);
-                    }
-                },
-                {data: 'unit', title: 'Unit'},
-            ],
-            _dois: [],
-            _data: [],
-            _sidebarVisible: false,
-            _title: "Roughness parameters"
-        }
-    },
-    mounted() {
-        this.updateCard();
-    },
-    computed: {
-        analysisIds() {
-            return this._analyses.map(a => a.id).join();
-        }
-    },
-    methods: {
-        updateCard() {
-            /* Fetch JSON describing the card */
-            fetch(`${this.apiUrl}/${this.functionId}?subjects=${this.subjects}`, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'X-CSRFToken': this.csrfToken
-                }
-            })
-                .then(response => response.json())
-                .then(data => {
-                    this._analyses = data.analyses;
-                    /** replace null in value with NaN
-                     * This is needed because we cannot pass NaN through JSON without
-                     * extra libraries, so it is passed as null (workaround) */
-                    this._data = data.tableData.map(x => {
-                        if (x['value'] === null) {
-                            x['value'] = NaN;
-                        }
-                        return x
-                    });
-                    this._dois = data.dois;
-                });
-        }
+            return x
+        });
+        _dois.value = response.data.dois;
+    });
+}
+
+function taskStateChanged(nbRunningOrPending, nbSuccess, nbFailed) {
+    if (nbRunningOrPending === 0 && _nbRunningOrPending > 0) {
+        // All tasks finished, reload card
+        updateCard();
     }
-};
+    _nbRunningOrPending = nbRunningOrPending;
+}
+
 </script>
 
 <template>
@@ -123,7 +117,8 @@ export default {
         <div class="card-header">
             <div class="btn-group btn-group-sm float-end">
                 <tasks-button v-if="_analyses !== null && _analyses.length > 0"
-                              :analyses="_analyses">
+                              :analyses="_analyses"
+                              @task-state-changed="taskStateChanged">
                 </tasks-button>
                 <button v-if="_analyses !== null && _analyses.length > 0"
                         @click="updateCard"

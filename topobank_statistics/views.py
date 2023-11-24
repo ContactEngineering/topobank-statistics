@@ -30,14 +30,6 @@ def roughness_parameters_card_view(request, **kwargs):
     controller = AnalysisController.from_request(request, **kwargs)
 
     #
-    # Basic context data
-    #
-    context = {
-        'dois': controller.dois,
-        'analyses': controller.to_representation(request=request)
-    }
-
-    #
     # for statistics, count views per function
     #
     increase_statistics_by_date_and_object(Metric.objects.ANALYSES_RESULTS_VIEW_COUNT, obj=controller.function)
@@ -51,6 +43,11 @@ def roughness_parameters_card_view(request, **kwargs):
     # Filter only successful ones
     #
     analyses_success = controller.get(['su'], True)
+
+    #
+    # Basic context data
+    #
+    context = controller.get_context(request=request)
 
     data = []
     for analysis in analyses_success:
