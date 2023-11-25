@@ -1,6 +1,6 @@
 # Changelog for plugin *topobank-statistics*
 
-## 1.2.0 (not yet released)
+## 1.2.0 (2023-11-25)
 
 - MAINT: Update to Bootstrap 5
 

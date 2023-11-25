@@ -23,8 +23,8 @@ def test_roughness_params_download_as_txt(client, two_topos, file_format, handle
 
     kwargs = {}
 
-    ana1 = TopographyAnalysisFactory.create(subject=t1, function=func, kwargs=kwargs)
-    ana2 = TopographyAnalysisFactory.create(subject=t1, function=func, kwargs=kwargs)
+    ana1 = TopographyAnalysisFactory.create(subject_topography=t1, function=func, kwargs=kwargs)
+    ana2 = TopographyAnalysisFactory.create(subject_topography=t1, function=func, kwargs=kwargs)
 
     username = 'testuser'
     password = 'abcd$1234'
@@ -137,7 +137,7 @@ def test_roughness_params_rounded(api_rf, mocker, template_flavor, user_with_plu
     topo = Topography2DFactory(size_x=1, size_y=1, surface=surf)
 
     func = AnalysisFunction.objects.get(name='Roughness parameters')
-    TopographyAnalysisFactory(subject=topo, function=func)
+    TopographyAnalysisFactory(subject_topography=topo, function=func)
 
     request = api_rf.get(f'/plugins/topobank_statistics/card/roughness-parameters/{func.id}',
                          {'function_id': func.id, 'subjects': subjects_to_base64([topo])})
