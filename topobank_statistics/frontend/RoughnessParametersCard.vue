@@ -18,7 +18,7 @@ import {formatExponential} from "topobank/utils/formatting";
 const props = defineProps({
     apiUrl: {
         type: String,
-        default: '/plugins/topobank_statistics/card/roughness-parameters'
+        default: '/plugins/statistics/card/roughness-parameters'
     },
     detailUrl: {
         type: String,
