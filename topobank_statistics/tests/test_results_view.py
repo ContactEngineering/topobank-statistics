@@ -9,7 +9,6 @@ from topobank.manager.tests.utils import two_topos
 from topobank.analysis.models import AnalysisFunction
 from topobank.analysis.tests.utils import TopographyAnalysisFactory, Topography2DFactory, SurfaceFactory
 
-from ..functions import APP_NAME, VIZ_ROUGHNESS_PARAMETERS
 from ..views import roughness_parameters_card_view, NUM_SIGNIFICANT_DIGITS_RMS_VALUES
 
 

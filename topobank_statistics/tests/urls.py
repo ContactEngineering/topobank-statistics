@@ -1,11 +1,12 @@
 """
 Making urls from topobank available for tests.
 """
+
 from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
 
-from topobank.views import HomeView
+from ce_ui.views import HomeView
 
 urlpatterns = [path("", HomeView.as_view(), name="home"),
                path(
