@@ -1,10 +1,8 @@
 from importlib.metadata import version
-__version__ = version("topobank-statistics")
 
-try:
-    from topobank.plugins import PluginConfig
-except ImportError:
-    raise RuntimeError("Please use topobank 0.92.0 or above to use this plugin!")
+from topobank.plugins import PluginConfig
+
+__version__ = version("topobank-statistics")
 
 
 class StatisticsPluginConfig(PluginConfig):
@@ -38,4 +36,3 @@ class StatisticsPluginConfig(PluginConfig):
         import topobank_statistics.views
         # noinspection PyUnresolvedReferences
         import topobank_statistics.downloads
-
