@@ -1,13 +1,12 @@
-import pytest
-
 import tempfile
+
 import numpy as np
 import openpyxl
+import pytest
 
-from topobank.manager.utils import subjects_to_base64
-from topobank.manager.tests.utils import two_topos
 from topobank.analysis.models import AnalysisFunction
 from topobank.analysis.tests.utils import TopographyAnalysisFactory, Topography2DFactory, SurfaceFactory
+from topobank.manager.utils import subjects_to_base64
 
 from ..views import roughness_parameters_card_view, NUM_SIGNIFICANT_DIGITS_RMS_VALUES
 
@@ -82,7 +81,6 @@ def test_roughness_params_download_as_txt(client, two_topos, file_format, handle
 @pytest.mark.parametrize('template_flavor', ['list', 'detail'])
 @pytest.mark.django_db
 def test_roughness_params_rounded(api_rf, mocker, template_flavor, user_with_plugin, handle_usage_statistics):
-
     def myfunc(topography, *args, **kwargs):
         """Return some fake values for testing rounding"""
         return [
