@@ -5,7 +5,7 @@ from topobank.plugins import PluginConfig
 try:
     __version__ = importlib.metadata.version('topobank-statistics')
 except importlib.metadata.PackageNotFoundError:
-    __version__ = 'N/A (package metadata not found)'
+    __version__ = '0.0.0'
 
 
 class StatisticsPluginConfig(PluginConfig):
