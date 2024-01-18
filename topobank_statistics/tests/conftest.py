@@ -8,7 +8,7 @@ from topobank.users.tests.factories import UserFactory
 
 @pytest.mark.django_db
 @pytest.fixture
-def user_with_plugin(sync_analysis_functions):
+def user_with_plugin(sync_analysis_functions):  # noqa: F811
     org_name = "Test Organization"
     org = OrganizationFactory(name=org_name, plugins_available="topobank_statistics")
     user = UserFactory()
