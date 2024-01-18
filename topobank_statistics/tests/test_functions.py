@@ -18,6 +18,7 @@ EXPECTED_KEYS_FOR_PLOT_CARD_ANALYSIS = sorted(['alerts', 'name',
                                                'xlabel', 'ylabel', 'xunit', 'yunit',
                                                'xscale', 'yscale', 'series'])
 
+
 ###############################################################################
 # Helpers for doing tests
 ###############################################################################
@@ -44,6 +45,7 @@ class DummyProgressRecorder:
     def set_progress(self, a, nsteps):
         """Do nothing."""
         pass  # dummy
+
 
 ###############################################################################
 # Tests for line scans
@@ -110,7 +112,7 @@ def test_slope_distribution_simple_line_scan():
 
     assert len(result['series']) == 2
 
-    exp_bins = np.array([-2-1/1500, -2, -2+1/1500])  # for slopes
+    exp_bins = np.array([-2 - 1 / 1500, -2, -2 + 1 / 1500])  # for slopes
     exp_slope_dist_values = [0, 1500, 0]  # integral with dx=1/3 results to 1
     series0 = result['series'][0]
     np.testing.assert_almost_equal(series0['x'], exp_bins)
@@ -430,7 +432,7 @@ def test_scale_dependent_slope_simple_2d_topography(simple_linear_2d_topography)
     assert result['name'] == 'Scale-dependent slope'
     for dataset in result['series']:
         if dataset['name'] == 'Along y':
-            np.testing.assert_almost_equal(dataset['y'], 2*np.ones_like(dataset['y']))
+            np.testing.assert_almost_equal(dataset['y'], 2 * np.ones_like(dataset['y']))
 
 
 def test_variable_bandwidth_simple_2d_topography(simple_linear_2d_topography):
@@ -566,18 +568,21 @@ def simple_surface():
     class WrapTopography:
         def __init__(self, t):
             self._t = t
+
         def topography(self):
             return self._t
 
     class WrapRequest:
         def __init__(self, c):
             self._c = c
+
         def all(self):
             return self._c
 
     class WrapSurface:
         def __init__(self, c):
             self._c = c
+
         @property
         def topography_set(self):
             return WrapRequest(self._c)
@@ -773,4 +778,3 @@ def test_sync_analysis_functions():  # TODO move to main project
     #
     call_command('register_analysis_functions')
     assert len(available_funcs_names) == AnalysisFunction.objects.count()
-

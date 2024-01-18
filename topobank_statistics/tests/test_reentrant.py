@@ -30,5 +30,5 @@ def reentrant_line_scan():
                                            scale_dependent_slope, scale_dependent_curvature])
 def test_power_spectrum(reentrant_line_scan, analysis_func):
     topo = FakeTopographyModel(reentrant_line_scan)
-    with pytest.raises(ReentrantDataError) as exc:
+    with pytest.raises(ReentrantDataError):
         analysis_func(topo)
