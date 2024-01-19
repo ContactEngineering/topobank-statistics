@@ -1,1 +1,1 @@
-from .apps import __version__
+from .apps import __version__  # noqa: F401

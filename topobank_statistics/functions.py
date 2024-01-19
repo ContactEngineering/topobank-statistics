@@ -4,8 +4,8 @@ from SurfaceTopography.Container.ScaleDependentStatistics import scale_dependent
 from SurfaceTopography.Container.common import suggest_length_unit
 from SurfaceTopography.Exceptions import CannotPerformAnalysisError, ReentrantDataError
 
-from topobank.analysis.functions import reasonable_bins_argument, wrap_series, \
-    make_alert_entry, ContainerProxy, VIZ_SERIES
+from topobank.analysis.functions import reasonable_bins_argument, wrap_series, make_alert_entry, ContainerProxy, \
+    VIZ_SERIES
 from topobank.analysis.registry import register_implementation
 
 APP_NAME = "topobank_statistics"
@@ -36,7 +36,7 @@ def height_distribution(topography, bins=None, wfac=5, progress_recorder=None, s
 
     try:
         unit = topography.unit
-    except:
+    except AttributeError:
         unit = None
 
     series = [
@@ -123,7 +123,7 @@ def _moments_histogram_gaussian(arr, bins, topography, wfac, quantity, label, un
         # Replace with catching of specific exception when
         # https://github.com/ContactEngineering/SurfaceTopography/issues/108 is implemented.
         if (len(exc.args) > 0) and \
-            ((exc.args[0] == 'supplied range of [0.0, inf] is not finite') or ('is reentrant' in exc.args[0])):
+                ((exc.args[0] == 'supplied range of [0.0, inf] is not finite') or ('is reentrant' in exc.args[0])):
             raise ReentrantDataError("Cannot calculate curvature distribution for reentrant measurements.")
         raise
 
@@ -257,7 +257,7 @@ def curvature_distribution(topography, bins=None, wfac=5, progress_recorder=None
         # Replace with catching of specific exception when
         # https://github.com/ContactEngineering/SurfaceTopography/issues/108 is implemented.
         if (len(exc.args) > 0) and \
-            ((exc.args[0] == 'supplied range of [-inf, inf] is not finite') or ('is reentrant' in exc.args[0])):
+                ((exc.args[0] == 'supplied range of [-inf, inf] is not finite') or ('is reentrant' in exc.args[0])):
             raise ReentrantDataError("Cannot calculate curvature distribution for reentrant measurements.")
         raise
 
@@ -300,16 +300,16 @@ def power_spectrum(topography, progress_recorder=None, storage_prefix=None, wind
     """Calculate Power Spectrum for given topography."""
     # Get low level topography from SurfaceTopography model
     return _analysis_function(topography,
-                             'power_spectrum_from_profile',
-                             'power_spectrum_from_area',
-                             'Power-spectral density (PSD)',
-                             'Wavevector',
-                             'PSD',
-                             '1D PSD along x',
-                             '1D PSD along y',
-                             'q/π × 2D PSD',
-                             '{}⁻¹',
-                             '{}³',
+                              'power_spectrum_from_profile',
+                              'power_spectrum_from_area',
+                              'Power-spectral density (PSD)',
+                              'Wavevector',
+                              'PSD',
+                              '1D PSD along x',
+                              '1D PSD along y',
+                              'q/π × 2D PSD',
+                              '{}⁻¹',
+                              '{}³',
                               conv_2d_fac=1 / np.pi,
                               conv_2d_exponent=1,
                               window=window,
@@ -325,13 +325,13 @@ def power_spectrum_for_surface(surface, progress_recorder=None, storage_prefix=N
 
     return _analysis_function_for_surface(surface,
                                           progress_recorder,
-                                         'power_spectrum_from_profile',
-                                         'Power-spectral density (PSD)',
-                                         'Wavevector',
-                                         'PSD',
-                                         '1D PSD along x',
-                                         '{}⁻¹',
-                                         '{}³',
+                                          'power_spectrum_from_profile',
+                                          'Power-spectral density (PSD)',
+                                          'Wavevector',
+                                          'PSD',
+                                          '1D PSD along x',
+                                          '{}⁻¹',
+                                          '{}³',
                                           window=window,
                                           nb_points_per_decade=nb_points_per_decade,
                                           storage_prefix=storage_prefix)
@@ -340,16 +340,16 @@ def power_spectrum_for_surface(surface, progress_recorder=None, storage_prefix=N
 @register_implementation("analysis", VIZ_SERIES, "Autocorrelation")
 def autocorrelation(topography, progress_recorder=None, storage_prefix=None, nb_points_per_decade=10):
     return _analysis_function(topography,
-                             'autocorrelation_from_profile',
-                             'autocorrelation_from_area',
-                             'Height-difference autocorrelation function (ACF)',
-                             'Distance',
-                             'ACF',
-                             'Along x',
-                             'Along y',
-                             'Radial average',
-                             '{}',
-                             '{}²',
+                              'autocorrelation_from_profile',
+                              'autocorrelation_from_area',
+                              'Height-difference autocorrelation function (ACF)',
+                              'Distance',
+                              'ACF',
+                              'Along x',
+                              'Along y',
+                              'Radial average',
+                              '{}',
+                              '{}²',
                               nb_points_per_decade=nb_points_per_decade,
                               storage_prefix=storage_prefix)
 
@@ -358,13 +358,13 @@ def autocorrelation(topography, progress_recorder=None, storage_prefix=None, nb_
 def autocorrelation_for_surface(surface, progress_recorder=None, storage_prefix=None, nb_points_per_decade=10):
     return _analysis_function_for_surface(surface,
                                           progress_recorder,
-                                         'autocorrelation_from_profile',
-                                         'Height-difference autocorrelation function (ACF)',
-                                         'Distance',
-                                         'ACF',
-                                         'Along x',
-                                         '{}',
-                                         '{}²',
+                                          'autocorrelation_from_profile',
+                                          'Height-difference autocorrelation function (ACF)',
+                                          'Distance',
+                                          'ACF',
+                                          'Along x',
+                                          '{}',
+                                          '{}²',
                                           nb_points_per_decade=nb_points_per_decade,
                                           storage_prefix=storage_prefix)
 
@@ -372,16 +372,16 @@ def autocorrelation_for_surface(surface, progress_recorder=None, storage_prefix=
 @register_implementation("analysis", VIZ_SERIES, "Variable bandwidth")
 def variable_bandwidth(topography, progress_recorder=None, storage_prefix=None):
     return _analysis_function(topography,
-                             'variable_bandwidth_from_profile',
-                             'variable_bandwidth_from_area',
-                             'Variable-bandwidth analysis',
-                             'Bandwidth',
-                             'RMS height',
-                             'Profile decomposition along x',
-                             'Profile decomposition along y',
-                             'Areal decomposition',
-                             '{}',
-                             '{}',
+                              'variable_bandwidth_from_profile',
+                              'variable_bandwidth_from_area',
+                              'Variable-bandwidth analysis',
+                              'Bandwidth',
+                              'RMS height',
+                              'Profile decomposition along x',
+                              'Profile decomposition along y',
+                              'Areal decomposition',
+                              '{}',
+                              '{}',
                               storage_prefix=storage_prefix)
 
 
@@ -392,13 +392,13 @@ def variable_bandwidth_for_surface(surface, progress_recorder=None, storage_pref
     nb_points_per_decade = 10
     return _analysis_function_for_surface(surface,
                                           progress_recorder,
-                                         'variable_bandwidth_from_profile',
-                                         'Variable-bandwidth analysis',
-                                         'Bandwidth',
-                                         'RMS height',
-                                         'Profile decomposition along x',
-                                         '{}',
-                                         '{}',
+                                          'variable_bandwidth_from_profile',
+                                          'Variable-bandwidth analysis',
+                                          'Bandwidth',
+                                          'RMS height',
+                                          'Profile decomposition along x',
+                                          '{}',
+                                          '{}',
                                           nb_points_per_decade=nb_points_per_decade,
                                           storage_prefix=storage_prefix)
 
@@ -419,7 +419,7 @@ def scale_dependent_roughness_parameter(topography, progress_recorder, order_of_
         nb_analyses = 2  # Just x-direction (reliable + unreliable)
     progress_offset = 0
     progress_callback = None if progress_recorder is None else \
-        lambda i, n: progress_recorder.set_progress(progress_offset + i/n, nb_analyses)
+        lambda i, n: progress_recorder.set_progress(progress_offset + i / n, nb_analyses)
 
     def process_series_reliable_unreliable(series_name, func_kwargs, is_reliable_visible=False):
         """Add series for reliable and unreliable data.

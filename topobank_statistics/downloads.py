@@ -39,9 +39,9 @@ def roughness_parameters_data_frame(analyses):
 
             quantity_header = quantity['quantity']
             if quantity['from']:
-                quantity_header += ', ' +  quantity['from']
+                quantity_header += ', ' + quantity['from']
             if quantity['direction']:
-                quantity_header += ', ' +  quantity['direction']
+                quantity_header += ', ' + quantity['direction']
             if quantity['symbol']:
                 quantity_header = quantity['symbol'].replace(r'&Delta;', 'Δ') + ' [' + quantity_header + ']'
             quantity_header += f' ({v_si.units})'
@@ -84,7 +84,6 @@ def download_roughness_parameters_to_txt(request, analyses):
     publication_urls = publications_urls(request, analyses)
 
     # Pack analysis results into a single text file.
-    data = []
     f = io.StringIO()
     for i, analysis in enumerate(analyses):
         if i == 0:
@@ -156,4 +155,3 @@ def download_roughness_parameters_to_xlsx(request, analyses):
     # Close file and return response.
     f.close()
     return response
-

@@ -49,7 +49,7 @@ jobs:
       run: |
         pip install --upgrade pip pip-tools
         pushd /tmp
-        git clone https://github.com/ContactEngineering/topobank.git
+        git clone -b 23_separate_ui https://github.com/ContactEngineering/topobank.git
         popd
         pip-compile --extra dev pyproject.toml /tmp/topobank/pyproject.toml
         pip install -r requirements.txt

@@ -1,10 +1,11 @@
-from importlib.metadata import version
-__version__ = version("topobank-statistics")
+import importlib.metadata
+
+from topobank.plugins import PluginConfig
 
 try:
-    from topobank.plugins import PluginConfig
-except ImportError:
-    raise RuntimeError("Please use topobank 0.92.0 or above to use this plugin!")
+    __version__ = importlib.metadata.version('topobank-statistics')
+except importlib.metadata.PackageNotFoundError:
+    __version__ = '0.0.0'
 
 
 class StatisticsPluginConfig(PluginConfig):
@@ -30,12 +31,6 @@ class StatisticsPluginConfig(PluginConfig):
 
     def ready(self):
         # make sure the functions are registered now
-        # TODO can this be done with signals?
-
-        # noinspection PyUnresolvedReferences
-        import topobank_statistics.functions
-        # noinspection PyUnresolvedReferences
-        import topobank_statistics.views
-        # noinspection PyUnresolvedReferences
-        import topobank_statistics.downloads
-
+        import topobank_statistics.functions  # noqa: F401
+        import topobank_statistics.views  # noqa: F401
+        import topobank_statistics.downloads  # noqa: F401
