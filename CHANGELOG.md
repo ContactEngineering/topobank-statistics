@@ -1,6 +1,6 @@
 # Changelog for plugin *topobank-statistics*
 
-## 1.3.0 (2024-01-20)
+## 1.2.1 (2024-01-20)
 
 - MAINT: Enforcing PEP-8 style
 
