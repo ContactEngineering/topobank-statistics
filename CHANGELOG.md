@@ -1,5 +1,9 @@
 # Changelog for plugin *topobank-statistics*
 
+## 1.2.3 (2024-03-21)
+
+- BUILD: Changed build system to flit
+
 ## 1.2.2 (2024-03-12)
 
 - MAINT: Compatibility with topobank 1.7.0
