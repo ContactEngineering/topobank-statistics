@@ -1,5 +1,9 @@
 # Changelog for plugin *topobank-statistics*
 
+## 1.2.4 (2024-03-22)
+ 
+- BUG: Fixed version discovery
+
 ## 1.2.3 (2024-03-21)
 
 - BUILD: Changed build system to flit
