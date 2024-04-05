@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = 'topobank-statistics'
-description = 'This is a plugin for "topobank" for statistical analysis of measurements and digital surface twins.'
+description = 'Statistical roughness analysis for "topobank"'
 requires-python = '>=3.8.0'
 dynamic = ['version']
 readme = 'README.rst'
