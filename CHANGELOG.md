@@ -1,5 +1,9 @@
 # Changelog for plugin *topobank-statistics*
 
+## 1.3.0 (not released yet)
+
+- MAINT: Switched to unified analaysis card component
+
 ## 1.2.4 (2024-03-22)
  
 - BUG: Fixed version discovery
