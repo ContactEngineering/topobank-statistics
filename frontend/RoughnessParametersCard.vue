@@ -1,19 +1,18 @@
 <script setup>
 
 import axios from "axios";
-import {v4 as uuid4} from 'uuid';
 import {computed, onMounted, ref} from "vue";
+
+import {BDropdownDivider, BDropdownItem} from "bootstrap-vue-next";
 
 import DataTable from 'datatables.net-vue3';
 import DataTablesLib from 'datatables.net-bs5';
 
 DataTable.use(DataTablesLib);
 
-import BibliographyModal from 'topobank/analysis/BibliographyModal.vue';
-import CardExpandButton from 'topobank/analysis/CardExpandButton.vue';
-import TasksButton from 'topobank/analysis/TasksButton.vue';
-
 import {formatExponential} from "topobank/utils/formatting";
+
+import AnalysisCard from "topobank/analysis/AnalysisCard.vue";
 
 const props = defineProps({
     apiUrl: {
@@ -24,20 +23,10 @@ const props = defineProps({
         type: String,
         default: '/ui/html/analysis-detail/'
     },
-    enlarged: {
-        type: Boolean,
-        default: false
-    },
     functionId: Number,
     functionName: String,
     subjects: String,
     txtDownloadUrl: String,
-    uid: {
-        type: String,
-        default() {
-            return uuid4();
-        }
-    },
     xlsxDownloadUrl: String
 });
 
@@ -71,11 +60,7 @@ const _dois = ref([]);
 const _data = ref([]);
 
 // GUI logic
-const _sidebarVisible = ref(false);
-const _title = ref("Roughness parameters");
-
-// Current task status
-let _nbRunningOrPending = 0;
+const _title = "Roughness parameters";
 
 onMounted(() => {
     updateCard();
@@ -102,105 +87,38 @@ function updateCard() {
     });
 }
 
-function taskStateChanged(nbRunningOrPending, nbSuccess, nbFailed) {
-    if (nbRunningOrPending === 0 && _nbRunningOrPending > 0) {
-        // All tasks finished, reload card
-        updateCard();
-    }
-    _nbRunningOrPending = nbRunningOrPending;
-}
-
 </script>
 
 <template>
-    <div class="card search-result-card">
-        <div class="card-header">
-            <div class="btn-group btn-group-sm float-end">
-                <tasks-button v-if="_analyses !== null && _analyses.length > 0"
-                              :analyses="_analyses"
-                              @task-state-changed="taskStateChanged">
-                </tasks-button>
-                <button v-if="_analyses !== null && _analyses.length > 0"
-                        @click="updateCard"
-                        class="btn btn-default float-end ms-1">
-                    <i class="fa fa-redo"></i>
-                </button>
-                <card-expand-button v-if="!enlarged"
-                                    :detail-url="detailUrl"
-                                    :function-id="functionId"
-                                    :subjects="subjects"
-                                    class="btn-group btn-group-sm float-end">
-                </card-expand-button>
-            </div>
-            <h5 v-if="_analyses === null"
-                class="text-dark">
-                {{ _title }}
-            </h5>
-            <a v-if="_analyses !== null && _analyses.length > 0"
-               class="text-dark"
-               href="#"
-               @click="_sidebarVisible=true">
-                <h5><i class="fa fa-bars"></i> {{ _title }}</h5>
-            </a>
-        </div>
-        <div class="card-body">
-            <div v-if="_analyses === null" class="tab-content">
-                <span class="spinner"></span>
-                <div>Please wait...</div>
-            </div>
-
-            <div v-if="_analyses !== null" class="tab-content">
-                <div class="tab-pane show active" role="tabpanel" aria-label="Tab showing a plot">
-                    <data-table class="table table-striped table-bordered"
-                                :column-defs="_columnDefs"
-                                :columns="_columns"
-                                :data="_data"
-                                responsive="yes"
-                                scroll-x="yes">
-                    </data-table>
-                </div>
-            </div>
-        </div>
-        <div v-if="_sidebarVisible"
-             class="position-absolute h-100">
-            <!-- card-header sets the margins identical to the card so the title appears at the same position -->
-            <nav class="card-header navbar navbar-toggleable-xl bg-light flex-column align-items-start h-100">
-                <ul class="flex-column navbar-nav">
-                    <a class="text-dark"
-                       href="#"
-                       @click="_sidebarVisible=false">
-                        <h5><i class="fa fa-bars"></i> {{ _title }}</h5>
-                    </a>
-                    <li class="nav-item mb-1 mt-1">
-                        Download
-                        <div class="btn-group ms-1" role="group" aria-label="Download formats">
-                            <a :href="`/analysis/download/${analysisIds}/csv`"
-                               class="btn btn-default"
-                               @click="_sidebarVisible=false">
-                                CSV
-                            </a>
-                            <a :href="`/analysis/download/${analysisIds}/xlsx`"
-                               class="btn btn-default"
-                               @click="_sidebarVisible=false">
-                                XLSX
-                            </a>
-                        </div>
-                    </li>
-                    <li class="nav-item mb-1 mt-1">
-                        <a href="#" data
-                           data-toggle="modal"
-                           :data-target="`#bibliography-modal-${uid}`"
-                           class="btn btn-default w-100"
-                           @click="_sidebarVisible=false">
-                            Bibliography
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-        </div>
-    </div>
-    <bibliography-modal
-        :id="`bibliography-modal-${uid}`"
-        :dois="_dois">
-    </bibliography-modal>
+    <AnalysisCard v-model:analyses="_analyses"
+                  :detailUrl="detailUrl"
+                  :dois="_dois"
+                  :enlarged="enlarged"
+                  :messages="_messages"
+                  :functionId="functionId"
+                  :subjects="subjects"
+                  :showLoadingSpinner="_nbPendingAjaxRequests > 0"
+                  :title="_title"
+                  @allTasksFinished="updateCard"
+                  @someTasksFinished="updateCard"
+                  @refreshButtonClicked="updateCard">
+        <template #dropdowns>
+            <BDropdownDivider v-if="_analyses != null && _analyses.length > 0"></BDropdownDivider>
+            <BDropdownItem v-for="analysis in _analyses"
+                           :href="`/analysis/download/${analysisIds}/csv`">
+                Download CSV
+            </BDropdownItem>
+            <BDropdownItem v-for="analysis in _analyses"
+                           :href="`/analysis/download/${analysisIds}/xlsx`">
+                Download XLSX
+            </BDropdownItem>
+        </template>
+        <DataTable class="table table-striped table-bordered"
+                    :column-defs="_columnDefs"
+                    :columns="_columns"
+                    :data="_data"
+                    responsive="yes"
+                    scroll-x="yes">
+        </DataTable>
+    </AnalysisCard>
 </template>

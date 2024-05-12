@@ -1,5 +1,9 @@
 # Changelog for plugin *topobank-statistics*
 
+## 1.3.0 (2024-05-12)
+
+- ENH: Use new `AnalysisCard` component
+
 ## 1.2.4 (2024-03-22)
  
 - BUG: Fixed version discovery
