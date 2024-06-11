@@ -32,8 +32,7 @@ classifiers = [
 ]
 dependencies = [
     'DiscoverVersion',
-    #'topobank',
-    'SurfaceTopography>=1.13.4',
+    'SurfaceTopography>=1.14.0',
     'pint'
 ]
 
