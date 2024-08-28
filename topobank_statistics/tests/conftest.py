@@ -1,9 +1,12 @@
 import pytest
 
-from topobank.fixtures import api_rf, handle_usage_statistics, sync_analysis_functions  # noqa: F401
-from topobank.manager.tests.utils import two_topos  # noqa: F401
-from topobank.organizations.tests.utils import OrganizationFactory
-from topobank.users.tests.factories import UserFactory
+from topobank.testing.fixtures import (
+    api_rf,
+    handle_usage_statistics,
+    sync_analysis_functions,
+    two_topos,
+)  # noqa: F401
+from topobank.testing.factories import UserFactory, OrganizationFactory
 
 
 @pytest.mark.django_db
