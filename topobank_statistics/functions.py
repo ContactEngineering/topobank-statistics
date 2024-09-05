@@ -1,19 +1,18 @@
+from typing import Union
+
 import numpy as np
 from SurfaceTopography.Container.Averaging import log_average
-from SurfaceTopography.Container.ScaleDependentStatistics import (
-    scale_dependent_statistical_property,
-)
 from SurfaceTopography.Container.common import suggest_length_unit
-from SurfaceTopography.Exceptions import CannotPerformAnalysisError, ReentrantDataError
-
-from topobank.analysis.functions import (
-    reasonable_bins_argument,
-    wrap_series,
-    make_alert_entry,
-    ContainerProxy,
-    VIZ_SERIES,
-)
+from SurfaceTopography.Container.ScaleDependentStatistics import \
+    scale_dependent_statistical_property
+from SurfaceTopography.Exceptions import (CannotPerformAnalysisError,
+                                          ReentrantDataError)
+from topobank.analysis.functions import (AnalysisImplementation,
+                                         ContainerProxy, make_alert_entry,
+                                         reasonable_bins_argument, wrap_series)
 from topobank.analysis.registry import register_implementation
+from topobank.files.models import Folder
+from topobank.manager.models import Surface, Topography
 
 APP_NAME = "topobank_statistics"
 VIZ_ROUGHNESS_PARAMETERS = "roughness-parameters"
@@ -21,64 +20,81 @@ VIZ_ROUGHNESS_PARAMETERS = "roughness-parameters"
 GAUSSIAN_FIT_SERIES_NAME = "Gaussian fit"
 
 
-@register_implementation("analysis", VIZ_SERIES, "Height distribution")
-def height_distribution(
-    topography, bins=None, wfac=5, progress_recorder=None, storage_prefix=None
-):
-    # Get low level topography from SurfaceTopography model
-    topography = topography.topography()
+class HeightDistribution(AnalysisImplementation):
+    class Meta:
+        name = "topobank_statistics.height_distribution"
+        display_name = "Height distribution"
 
-    if bins is None:
-        bins = reasonable_bins_argument(topography)
+        implementations = {
+            Topography: "topography_implementation",
+        }
 
-    profile = topography.heights()
+    class Parameters(AnalysisImplementation.Parameters):
+        bins: Union[int, None] = None
+        wfac: int = 5
 
-    mean_height = np.mean(profile)
-    rms_height = (
-        topography.rms_height_from_area()
-        if topography.dim == 2
-        else topography.rms_height_from_profile()
-    )
+    def topography_implementation(
+        self, topography: Topography, folder: Folder = None, progress_recorder=None
+    ):
+        # Get low level topography from SurfaceTopography model
+        topography = topography.topography()
 
-    hist, bin_edges = np.histogram(np.ma.compressed(profile), bins=bins, density=True)
+        # Get parameters
+        bins = self.kwargs.bins
+        wfac = self.kwargs.wfac
+        if bins is None:
+            bins = reasonable_bins_argument(topography)
 
-    minval = mean_height - wfac * rms_height
-    maxval = mean_height + wfac * rms_height
-    x_gauss = np.linspace(minval, maxval, 1001)
-    y_gauss = np.exp(-((x_gauss - mean_height) ** 2) / (2 * rms_height**2)) / (
-        np.sqrt(2 * np.pi) * rms_height
-    )
+        profile = topography.heights()
 
-    try:
-        unit = topography.unit
-    except AttributeError:
-        unit = None
+        mean_height = np.mean(profile)
+        rms_height = (
+            topography.rms_height_from_area()
+            if topography.dim == 2
+            else topography.rms_height_from_profile()
+        )
 
-    series = [
-        dict(
+        hist, bin_edges = np.histogram(
+            np.ma.compressed(profile), bins=bins, density=True
+        )
+
+        minval = mean_height - wfac * rms_height
+        maxval = mean_height + wfac * rms_height
+        x_gauss = np.linspace(minval, maxval, 1001)
+        y_gauss = np.exp(-((x_gauss - mean_height) ** 2) / (2 * rms_height**2)) / (
+            np.sqrt(2 * np.pi) * rms_height
+        )
+
+        try:
+            unit = topography.unit
+        except AttributeError:
+            unit = None
+
+        series = [
+            dict(
+                name="Height distribution",
+                x=(bin_edges[:-1] + bin_edges[1:]) / 2,
+                y=hist,
+            ),
+            dict(
+                name=GAUSSIAN_FIT_SERIES_NAME,
+                x=x_gauss,
+                y=y_gauss,
+            ),
+        ]
+
+        return dict(
             name="Height distribution",
-            x=(bin_edges[:-1] + bin_edges[1:]) / 2,
-            y=hist,
-        ),
-        dict(
-            name=GAUSSIAN_FIT_SERIES_NAME,
-            x=x_gauss,
-            y=y_gauss,
-        ),
-    ]
-
-    return dict(
-        name="Height distribution",
-        scalars={
-            "Mean Height": dict(value=mean_height, unit=unit),
-            "RMS Height": dict(value=rms_height, unit=unit),
-        },
-        xlabel="Height",
-        ylabel="Probability density",
-        xunit="" if unit is None else unit,
-        yunit="" if unit is None else "{}⁻¹".format(unit),
-        series=wrap_series(series),
-    )
+            scalars={
+                "Mean Height": dict(value=mean_height, unit=unit),
+                "RMS Height": dict(value=rms_height, unit=unit),
+            },
+            xlabel="Height",
+            ylabel="Probability density",
+            xunit="" if unit is None else unit,
+            yunit="" if unit is None else "{}⁻¹".format(unit),
+            series=wrap_series(series),
+        )
 
 
 def _reasonable_histogram_range(arr):
@@ -179,316 +195,367 @@ def _moments_histogram_gaussian(
     return scalars, series
 
 
-@register_implementation("analysis", VIZ_SERIES, "Slope distribution")
-def slope_distribution(
-    topography, bins=None, wfac=5, progress_recorder=None, storage_prefix=None
-):
-    """Calculates slope distribution for given topography."""
-    # Get low level topography from SurfaceTopography model
-    topography = topography.topography()
+class SlopeDistribution(AnalysisImplementation):
+    class Meta:
+        name = "topobank_statistics.slope_distribution"
+        display_name = "Slope distribution"
 
-    if bins is None:
-        bins = reasonable_bins_argument(topography)
+        implementations = {
+            Topography: "topography_implementation",
+        }
 
-    scalars = {}
-    series = []
-    # .. will be completed below..
+    class Parameters(AnalysisImplementation.Parameters):
+        bins: Union[int, None] = None
+        wfac: int = 5
 
-    if topography.dim == 2:
-        dh_dx, dh_dy = topography.derivative(n=1)
+    def topography_implementation(
+        self, topography: Topography, folder: Folder = None, progress_recorder=None
+    ):
+        """Calculates slope distribution for given topography."""
+        # Get low level topography from SurfaceTopography model
+        topography = topography.topography()
 
-        #
-        # Results for x direction
-        #
-        scalars_slope_x, series_slope_x = _moments_histogram_gaussian(
-            dh_dx,
-            bins=bins,
-            topography=topography,
-            wfac=wfac,
-            quantity="slope",
-            unit="1",
-            label="x direction",
-        )
-        scalars.update(scalars_slope_x)
-        series.extend(series_slope_x)
+        # Get parameters
+        bins = self.kwargs.bins
+        wfac = self.kwargs.wfac
+        if bins is None:
+            bins = reasonable_bins_argument(topography)
 
-        #
-        # Results for y direction
-        #
-        scalars_slope_y, series_slope_y = _moments_histogram_gaussian(
-            dh_dy,
-            bins=bins,
-            topography=topography,
-            wfac=wfac,
-            quantity="slope",
-            unit="1",
-            label="y direction",
-        )
-        scalars.update(scalars_slope_y)
-        series.extend(series_slope_y)
+        scalars = {}
+        series = []
+        # .. will be completed below..
 
-        #
-        # Results for absolute gradient
-        #
-        # Not sure so far, how to calculate absolute gradient..
-        #
-        # absolute_gradients = np.sqrt(dh_dx**2+dh_dy**2)
-        # scalars_grad, series_grad = _moments_histogram_gaussian(absolute_gradients, bins=bins, wfac=wfac,
-        #                                                         quantity="slope", unit="?",
-        #                                                         label='absolute gradient',
-        #                                                         gaussian=False)
-        # result['scalars'].update(scalars_grad)
-        # result['series'].extend(series_grad)
+        if topography.dim == 2:
+            dh_dx, dh_dy = topography.derivative(n=1)
 
-    elif topography.dim == 1:
-        dh_dx = topography.derivative(n=1)
-        scalars_slope_x, series_slope_x = _moments_histogram_gaussian(
-            dh_dx,
-            bins=bins,
-            topography=topography,
-            wfac=wfac,
-            quantity="slope",
-            unit="1",
-            label="x direction",
-        )
-        scalars.update(scalars_slope_x)
-        series.extend(series_slope_x)
-    else:
-        raise ValueError(
-            "This analysis function can only handle 1D or 2D topographies."
-        )
-
-    return dict(
-        name="Slope distribution",
-        xlabel="Slope",
-        ylabel="Probability density",
-        xunit="1",
-        yunit="1",
-        scalars=scalars,
-        series=wrap_series(series),
-    )
-
-
-@register_implementation("analysis", VIZ_SERIES, "Curvature distribution")
-def curvature_distribution(
-    topography, bins=None, wfac=5, progress_recorder=None, storage_prefix=None
-):
-    # Get low level topography from SurfaceTopography model
-    topography = topography.topography()
-
-    if bins is None:
-        bins = reasonable_bins_argument(topography)
-
-    #
-    # Calculate the Laplacian
-    #
-    if topography.dim == 2:
-        curv_x, curv_y = topography.derivative(n=2)
-        curv = (curv_x + curv_y) / 2
-    else:
-        curv = topography.derivative(n=2)
-
-    mean_curv = np.mean(curv)
-    rms_curv = (
-        topography.rms_curvature_from_area()
-        if topography.dim == 2
-        else topography.rms_curvature_from_profile()
-    )
-
-    hist_arr = np.ma.compressed(curv)
-
-    try:
-        hist, bin_edges = np.histogram(
-            hist_arr,
-            bins=bins,
-            range=_reasonable_histogram_range(hist_arr),
-            density=True,
-        )
-    except (ValueError, RuntimeError) as exc:
-        # Workaround for GH #683 in order to recognize reentrant measurements.
-        # Replace with catching of specific exception when
-        # https://github.com/ContactEngineering/SurfaceTopography/issues/108 is implemented.
-        if (len(exc.args) > 0) and (
-            (exc.args[0] == "supplied range of [-inf, inf] is not finite")
-            or ("is reentrant" in exc.args[0])
-        ):
-            raise ReentrantDataError(
-                "Cannot calculate curvature distribution for reentrant measurements."
+            #
+            # Results for x direction
+            #
+            scalars_slope_x, series_slope_x = _moments_histogram_gaussian(
+                dh_dx,
+                bins=bins,
+                topography=topography,
+                wfac=wfac,
+                quantity="slope",
+                unit="1",
+                label="x direction",
             )
-        raise
+            scalars.update(scalars_slope_x)
+            series.extend(series_slope_x)
 
-    minval = mean_curv - wfac * rms_curv
-    maxval = mean_curv + wfac * rms_curv
-    x_gauss = np.linspace(minval, maxval, 1001)
-    y_gauss = np.exp(-((x_gauss - mean_curv) ** 2) / (2 * rms_curv**2)) / (
-        np.sqrt(2 * np.pi) * rms_curv
-    )
+            #
+            # Results for y direction
+            #
+            scalars_slope_y, series_slope_y = _moments_histogram_gaussian(
+                dh_dy,
+                bins=bins,
+                topography=topography,
+                wfac=wfac,
+                quantity="slope",
+                unit="1",
+                label="y direction",
+            )
+            scalars.update(scalars_slope_y)
+            series.extend(series_slope_y)
 
-    unit = topography.unit
-    inverse_unit = "{}⁻¹".format(unit)
+            #
+            # Results for absolute gradient
+            #
+            # Not sure so far, how to calculate absolute gradient..
+            #
+            # absolute_gradients = np.sqrt(dh_dx**2+dh_dy**2)
+            # scalars_grad, series_grad = _moments_histogram_gaussian(absolute_gradients, bins=bins, wfac=wfac,
+            #                                                         quantity="slope", unit="?",
+            #                                                         label='absolute gradient',
+            #                                                         gaussian=False)
+            # result['scalars'].update(scalars_grad)
+            # result['series'].extend(series_grad)
 
-    series = [
-        dict(
+        elif topography.dim == 1:
+            dh_dx = topography.derivative(n=1)
+            scalars_slope_x, series_slope_x = _moments_histogram_gaussian(
+                dh_dx,
+                bins=bins,
+                topography=topography,
+                wfac=wfac,
+                quantity="slope",
+                unit="1",
+                label="x direction",
+            )
+            scalars.update(scalars_slope_x)
+            series.extend(series_slope_x)
+        else:
+            raise ValueError(
+                "This analysis function can only handle 1D or 2D topographies."
+            )
+
+        return dict(
+            name="Slope distribution",
+            xlabel="Slope",
+            ylabel="Probability density",
+            xunit="1",
+            yunit="1",
+            scalars=scalars,
+            series=wrap_series(series),
+        )
+
+
+class CurvatureDistribution(AnalysisImplementation):
+    class Meta:
+        name = "topobank_statistics.curvature_distribution"
+        display_name = "Curvature distribution"
+
+        implementations = {
+            Topography: "topography_implementation",
+        }
+
+    class Parameters(AnalysisImplementation.Parameters):
+        bins: Union[list[float], int, None] = None
+        wfac: int = 5
+
+    def topography_implementation(
+        self, topography: Topography, folder: Folder = None, progress_recorder=None
+    ):
+        # Get low level topography from SurfaceTopography model
+        topography = topography.topography()
+
+        bins = self.kwargs.bins
+        wfac = self.kwargs.wfac
+        if bins is None:
+            bins = reasonable_bins_argument(topography)
+
+        #
+        # Calculate the Laplacian
+        #
+        if topography.dim == 2:
+            curv_x, curv_y = topography.derivative(n=2)
+            curv = (curv_x + curv_y) / 2
+        else:
+            curv = topography.derivative(n=2)
+
+        mean_curv = np.mean(curv)
+        rms_curv = (
+            topography.rms_curvature_from_area()
+            if topography.dim == 2
+            else topography.rms_curvature_from_profile()
+        )
+
+        hist_arr = np.ma.compressed(curv)
+
+        try:
+            hist, bin_edges = np.histogram(
+                hist_arr,
+                bins=bins,
+                range=_reasonable_histogram_range(hist_arr),
+                density=True,
+            )
+        except (ValueError, RuntimeError) as exc:
+            # Workaround for GH #683 in order to recognize reentrant measurements.
+            # Replace with catching of specific exception when
+            # https://github.com/ContactEngineering/SurfaceTopography/issues/108 is implemented.
+            if (len(exc.args) > 0) and (
+                (exc.args[0] == "supplied range of [-inf, inf] is not finite")
+                or ("is reentrant" in exc.args[0])
+            ):
+                raise ReentrantDataError(
+                    "Cannot calculate curvature distribution for reentrant measurements."
+                )
+            raise
+
+        minval = mean_curv - wfac * rms_curv
+        maxval = mean_curv + wfac * rms_curv
+        x_gauss = np.linspace(minval, maxval, 1001)
+        y_gauss = np.exp(-((x_gauss - mean_curv) ** 2) / (2 * rms_curv**2)) / (
+            np.sqrt(2 * np.pi) * rms_curv
+        )
+
+        unit = topography.unit
+        inverse_unit = "{}⁻¹".format(unit)
+
+        series = [
+            dict(
+                name="Curvature distribution",
+                x=(bin_edges[:-1] + bin_edges[1:]) / 2,
+                y=hist,
+            ),
+            dict(
+                name=GAUSSIAN_FIT_SERIES_NAME,
+                x=x_gauss,
+                y=y_gauss,
+            ),
+        ]
+
+        return dict(
             name="Curvature distribution",
-            x=(bin_edges[:-1] + bin_edges[1:]) / 2,
-            y=hist,
-        ),
-        dict(
-            name=GAUSSIAN_FIT_SERIES_NAME,
-            x=x_gauss,
-            y=y_gauss,
-        ),
-    ]
-
-    return dict(
-        name="Curvature distribution",
-        scalars={
-            "Mean Curvature": dict(value=mean_curv, unit=inverse_unit),
-            "RMS Curvature": dict(value=rms_curv, unit=inverse_unit),
-        },
-        xlabel="Curvature",
-        ylabel="Probability density",
-        xunit=inverse_unit,
-        yunit=unit,
-        series=wrap_series(series),
-    )
+            scalars={
+                "Mean Curvature": dict(value=mean_curv, unit=inverse_unit),
+                "RMS Curvature": dict(value=rms_curv, unit=inverse_unit),
+            },
+            xlabel="Curvature",
+            ylabel="Probability density",
+            xunit=inverse_unit,
+            yunit=unit,
+            series=wrap_series(series),
+        )
 
 
-@register_implementation("analysis", VIZ_SERIES, "Power spectrum")
-def power_spectrum(
-    topography,
-    progress_recorder=None,
-    storage_prefix=None,
-    window=None,
-    nb_points_per_decade=10,
-):
-    """Calculate Power Spectrum for given topography."""
-    # Get low level topography from SurfaceTopography model
-    return _analysis_function(
-        topography,
-        "power_spectrum_from_profile",
-        "power_spectrum_from_area",
-        "Power-spectral density (PSD)",
-        "Wavevector",
-        "PSD",
-        "1D PSD along x",
-        "1D PSD along y",
-        "q/π × 2D PSD",
-        "{}⁻¹",
-        "{}³",
-        conv_2d_fac=1 / np.pi,
-        conv_2d_exponent=1,
-        window=window,
-        nb_points_per_decade=nb_points_per_decade,
-        storage_prefix=storage_prefix,
-    )
+class PowerSpectralDensity(AnalysisImplementation):
+    class Meta:
+        name = "topobank_statistics.power_spectral_density"
+        display_name = "Power spectrum"
+
+        implementations = {
+            Topography: "topography_implementation",
+            Surface: "surface_implementation",
+        }
+
+    class Parameters(AnalysisImplementation.Parameters):
+        window: Union[str, None] = None
+        nb_points_per_decade: int = 10
+
+    def topography_implementation(
+        self, topography: Topography, folder: Folder = None, progress_recorder=None
+    ):
+        """Calculate Power Spectrum for given topography."""
+        # Get low level topography from SurfaceTopography model
+        return _analysis_function(
+            topography,
+            "power_spectrum_from_profile",
+            "power_spectrum_from_area",
+            "Power-spectral density (PSD)",
+            "Wavevector",
+            "PSD",
+            "1D PSD along x",
+            "1D PSD along y",
+            "q/π × 2D PSD",
+            "{}⁻¹",
+            "{}³",
+            conv_2d_fac=1 / np.pi,
+            conv_2d_exponent=1,
+            window=self.kwargs.window,
+            nb_points_per_decade=self.kwargs.nb_points_per_decade,
+            folder=folder,
+        )
+
+    def surface_implementation(
+        self, surface: Surface, folder: Folder = None, progress_recorder=None
+    ):
+        """Calculate Power Spectrum for given topography."""
+        # Get low level topography from SurfaceTopography model
+
+        return _analysis_function_for_surface(
+            surface,
+            progress_recorder,
+            "power_spectrum_from_profile",
+            "Power-spectral density (PSD)",
+            "Wavevector",
+            "PSD",
+            "1D PSD along x",
+            "{}⁻¹",
+            "{}³",
+            window=self.kwargs.window,
+            nb_points_per_decade=self.kwargs.nb_points_per_decade,
+            folder=folder,
+        )
 
 
-@register_implementation("analysis", VIZ_SERIES, "Power spectrum")
-def power_spectrum_for_surface(
-    surface,
-    progress_recorder=None,
-    storage_prefix=None,
-    window=None,
-    nb_points_per_decade=10,
-):
-    """Calculate Power Spectrum for given topography."""
-    # Get low level topography from SurfaceTopography model
+class Autocorrelation(AnalysisImplementation):
+    class Meta:
+        name = "topobank_statistics.autocorrelation"
+        display_name = "Autocorrelation"
 
-    return _analysis_function_for_surface(
-        surface,
-        progress_recorder,
-        "power_spectrum_from_profile",
-        "Power-spectral density (PSD)",
-        "Wavevector",
-        "PSD",
-        "1D PSD along x",
-        "{}⁻¹",
-        "{}³",
-        window=window,
-        nb_points_per_decade=nb_points_per_decade,
-        storage_prefix=storage_prefix,
-    )
+        implementations = {
+            Topography: "topography_implementation",
+            Surface: "surface_implementation",
+        }
 
+    class Parameters(AnalysisImplementation.Parameters):
+        nb_points_per_decade: int = 10
 
-@register_implementation("analysis", VIZ_SERIES, "Autocorrelation")
-def autocorrelation(
-    topography, progress_recorder=None, storage_prefix=None, nb_points_per_decade=10
-):
-    return _analysis_function(
-        topography,
-        "autocorrelation_from_profile",
-        "autocorrelation_from_area",
-        "Height-difference autocorrelation function (ACF)",
-        "Distance",
-        "ACF",
-        "Along x",
-        "Along y",
-        "Radial average",
-        "{}",
-        "{}²",
-        nb_points_per_decade=nb_points_per_decade,
-        storage_prefix=storage_prefix,
-    )
+    def topography_implementation(
+        self, topography: Topography, folder: Folder = None, progress_recorder=None
+    ):
+        return _analysis_function(
+            topography,
+            "autocorrelation_from_profile",
+            "autocorrelation_from_area",
+            "Height-difference autocorrelation function (ACF)",
+            "Distance",
+            "ACF",
+            "Along x",
+            "Along y",
+            "Radial average",
+            "{}",
+            "{}²",
+            nb_points_per_decade=self.kwargs.nb_points_per_decade,
+            folder=folder,
+        )
 
-
-@register_implementation("analysis", VIZ_SERIES, "Autocorrelation")
-def autocorrelation_for_surface(
-    surface, progress_recorder=None, storage_prefix=None, nb_points_per_decade=10
-):
-    return _analysis_function_for_surface(
-        surface,
-        progress_recorder,
-        "autocorrelation_from_profile",
-        "Height-difference autocorrelation function (ACF)",
-        "Distance",
-        "ACF",
-        "Along x",
-        "{}",
-        "{}²",
-        nb_points_per_decade=nb_points_per_decade,
-        storage_prefix=storage_prefix,
-    )
+    def surface_implementation(
+        self, surface: Surface, folder: Folder = None, progress_recorder=None
+    ):
+        return _analysis_function_for_surface(
+            surface,
+            progress_recorder,
+            "autocorrelation_from_profile",
+            "Height-difference autocorrelation function (ACF)",
+            "Distance",
+            "ACF",
+            "Along x",
+            "{}",
+            "{}²",
+            nb_points_per_decade=self.kwargs.nb_points_per_decade,
+            folder=folder,
+        )
 
 
-@register_implementation("analysis", VIZ_SERIES, "Variable bandwidth")
-def variable_bandwidth(topography, progress_recorder=None, storage_prefix=None):
-    return _analysis_function(
-        topography,
-        "variable_bandwidth_from_profile",
-        "variable_bandwidth_from_area",
-        "Variable-bandwidth analysis",
-        "Bandwidth",
-        "RMS height",
-        "Profile decomposition along x",
-        "Profile decomposition along y",
-        "Areal decomposition",
-        "{}",
-        "{}",
-        storage_prefix=storage_prefix,
-    )
+class VariableBandwidth(AnalysisImplementation):
+    class Meta:
+        name = "topobank_statistics.variable_bandwidth"
+        display_name = "Variable bandwidth"
 
+        implementations = {
+            Topography: "topography_implementation",
+            Surface: "surface_implementation",
+        }
 
-@register_implementation("analysis", VIZ_SERIES, "Variable bandwidth")
-def variable_bandwidth_for_surface(
-    surface, progress_recorder=None, storage_prefix=None
-):
-    # Resampling not possible for topographies, but all function for same name must have identical signatures. We hence
-    # simply fix `nb_points_per_decade` here.
-    nb_points_per_decade = 10
-    return _analysis_function_for_surface(
-        surface,
-        progress_recorder,
-        "variable_bandwidth_from_profile",
-        "Variable-bandwidth analysis",
-        "Bandwidth",
-        "RMS height",
-        "Profile decomposition along x",
-        "{}",
-        "{}",
-        nb_points_per_decade=nb_points_per_decade,
-        storage_prefix=storage_prefix,
-    )
+    def topography_implementation(
+        self, topography: Topography, folder: Folder = None, progress_recorder=None
+    ):
+        return _analysis_function(
+            topography,
+            "variable_bandwidth_from_profile",
+            "variable_bandwidth_from_area",
+            "Variable-bandwidth analysis",
+            "Bandwidth",
+            "RMS height",
+            "Profile decomposition along x",
+            "Profile decomposition along y",
+            "Areal decomposition",
+            "{}",
+            "{}",
+            folder=folder,
+        )
+
+    def surface_implementation(
+        self, surface: Surface, folder: Folder = None, progress_recorder=None
+    ):
+        # Resampling not possible for topographies, but all function for same name must
+        # have identical signatures. We hence simply fix `nb_points_per_decade` here.
+        nb_points_per_decade = 10
+        return _analysis_function_for_surface(
+            surface,
+            progress_recorder,
+            "variable_bandwidth_from_profile",
+            "Variable-bandwidth analysis",
+            "Bandwidth",
+            "RMS height",
+            "Profile decomposition along x",
+            "{}",
+            "{}",
+            nb_points_per_decade=nb_points_per_decade,
+            folder=folder,
+        )
 
 
 def scale_dependent_roughness_parameter(
@@ -502,7 +569,7 @@ def scale_dependent_roughness_parameter(
     xyfunc,
     xyname,
     yunit,
-    storage_prefix=None,
+    folder=None,
     **kwargs,
 ):
     topography_name = topography.name
@@ -630,7 +697,7 @@ def scale_dependent_roughness_parameter_for_surface(
     ylabel,
     xname,
     yunit,
-    storage_prefix=None,
+    folder=None,
     **kwargs,
 ):
     topographies = ContainerProxy(surface.topography_set.all())
@@ -682,256 +749,286 @@ def scale_dependent_roughness_parameter_for_surface(
     )
 
 
-@register_implementation("analysis", VIZ_SERIES, "Scale-dependent slope")
-def scale_dependent_slope(
-    topography, progress_recorder=None, storage_prefix=None, nb_points_per_decade=10
-):
-    return scale_dependent_roughness_parameter(
-        topography,
-        progress_recorder,
-        1,
-        "Scale-dependent slope",
-        "Slope",
-        "Slope in x-direction",
-        "Slope in y-direction",
-        lambda x, y: x * x + y * y,
-        "Gradient",
-        "1",
-        nb_points_per_decade=nb_points_per_decade,
-        storage_prefix=storage_prefix,
-    )
+class ScaleDependentSlope(AnalysisImplementation):
+    class Meta:
+        name = "topobank_statistics.scale_dependent_slope"
+        display_name = "Scale-dependent slope"
 
-
-@register_implementation("analysis", VIZ_SERIES, "Scale-dependent slope")
-def scale_dependent_slope_for_surface(
-    surface, progress_recorder=None, storage_prefix=None, nb_points_per_decade=10
-):
-    return scale_dependent_roughness_parameter_for_surface(
-        surface,
-        progress_recorder,
-        1,
-        "Scale-dependent slope",
-        "Slope",
-        "Slope in x-direction",
-        "1",
-        nb_points_per_decade=nb_points_per_decade,
-        storage_prefix=storage_prefix,
-    )
-
-
-@register_implementation("analysis", VIZ_SERIES, "Scale-dependent curvature")
-def scale_dependent_curvature(
-    topography, progress_recorder=None, storage_prefix=None, nb_points_per_decade=10
-):
-    return scale_dependent_roughness_parameter(
-        topography,
-        progress_recorder,
-        2,
-        "Scale-dependent curvature",
-        "Curvature",
-        "Curvature in x-direction",
-        "Curvature in y-direction",
-        lambda x, y: (x + y) ** 2 / 4,
-        "1/2 Laplacian",
-        "{}⁻¹",
-        nb_points_per_decade=nb_points_per_decade,
-        storage_prefix=storage_prefix,
-    )
-
-
-@register_implementation("analysis", VIZ_SERIES, "Scale-dependent curvature")
-def scale_dependent_curvature_for_surface(
-    surface, progress_recorder=None, storage_prefix=None, nb_points_per_decade=10
-):
-    return scale_dependent_roughness_parameter_for_surface(
-        surface,
-        progress_recorder,
-        2,
-        "Scale-dependent curvature",
-        "Curvature",
-        "Curvature in x-direction",
-        "{}⁻¹",
-        nb_points_per_decade=nb_points_per_decade,
-        storage_prefix=storage_prefix,
-    )
-
-
-@register_implementation(APP_NAME, VIZ_ROUGHNESS_PARAMETERS, "Roughness parameters")
-def roughness_parameters(topography, progress_recorder=None, storage_prefix=None):
-    """Calculate roughness parameters for given topography.
-
-    Parameters
-    ----------
-    topography : topobank.manager.models.Topography
-    progress_recorder : ProgressRecorder or None
-    storage_prefix : str or None
-
-    Returns
-    -------
-    list of dicts where each dict has keys
-
-     quantity, e.g. 'RMS height' or 'RMS gradient'
-     direction, e.g. 'x' or None
-     from, e.g. 'profile (1D)' or 'area (2D)' or ''
-     symbol, e.g. 'Sq' or ''
-     value, a number or NaN
-     unit, e.g. 'nm'
-    """
-
-    # Get low level topography from SurfaceTopography model
-    topography = topography.topography()
-
-    # noinspection PyBroadException
-    try:
-        unit = topography.unit
-        inverse_unit = "{}⁻¹".format(unit)
-    except KeyError:
-        unit = None
-        inverse_unit = None
-
-    is_2D = topography.dim == 2
-    if not is_2D and not (topography.dim == 1):
-        raise ValueError(
-            "This analysis function can only handle 1D or 2D topographies."
-        )
-
-    FROM_1D = "profile (1D)"
-    FROM_2D = "area (2D)"
-
-    #
-    # RMS height
-    #
-    result = [
-        {
-            "quantity": "RMS height",
-            "from": FROM_1D,
-            "symbol": "Rq",
-            "direction": "x",
-            "value": topography.rms_height_from_profile(),
-            "unit": unit,
+        implementations = {
+            Topography: "topography_implementation",
+            Surface: "surface_implementation",
         }
-    ]
-    if is_2D:
-        result.extend(
-            [
-                {
-                    "quantity": "RMS height",
-                    "from": FROM_1D,
-                    "symbol": "Rq",
-                    "direction": "y",
-                    "value": topography.transpose().rms_height_from_profile(),
-                    "unit": unit,
-                },
-                {
-                    "quantity": "RMS height",
-                    "from": FROM_2D,
-                    "symbol": "Sq",
-                    "direction": None,
-                    "value": topography.rms_height_from_area(),
-                    "unit": unit,
-                },
-            ]
-        )
-    #
-    # RMS curvature
-    #
-    if is_2D:
-        result.extend(
-            [
-                {
-                    "quantity": "RMS curvature",
-                    "from": FROM_1D,
-                    "symbol": "",
-                    "direction": "y",
-                    "value": topography.transpose().rms_curvature_from_profile(),
-                    "unit": inverse_unit,
-                },
-                {
-                    "quantity": "RMS curvature",
-                    "from": FROM_2D,
-                    "symbol": "",
-                    "direction": None,
-                    "value": topography.rms_curvature_from_area(),
-                    "unit": inverse_unit,
-                },
-            ]
+
+    class Parameters(AnalysisImplementation.Parameters):
+        nb_points_per_decade: int = 10
+
+    def topography_implementation(
+        self, topography: Topography, folder: Folder = None, progress_recorder=None
+    ):
+        return scale_dependent_roughness_parameter(
+            topography,
+            progress_recorder,
+            1,
+            "Scale-dependent slope",
+            "Slope",
+            "Slope in x-direction",
+            "Slope in y-direction",
+            lambda x, y: x * x + y * y,
+            "Gradient",
+            "1",
+            nb_points_per_decade=self.kwargs.nb_points_per_decade,
+            folder=folder,
         )
 
-    # RMS curvature in x direction is needed for 1D and 2D
-    result.append(
-        {
-            "quantity": "RMS curvature",
-            "from": FROM_1D,
-            "symbol": "",
-            "direction": "x",
-            "value": topography.rms_curvature_from_profile(),
-            "unit": inverse_unit,
+    def surface_implementation(
+        self, surface: Surface, folder: Folder = None, progress_recorder=None
+    ):
+        return scale_dependent_roughness_parameter_for_surface(
+            surface,
+            progress_recorder,
+            1,
+            "Scale-dependent slope",
+            "Slope",
+            "Slope in x-direction",
+            "1",
+            nb_points_per_decade=self.kwargs.nb_points_per_decade,
+            folder=folder,
+        )
+
+
+class ScaleDependentCurvature(AnalysisImplementation):
+    class Meta:
+        name = "topobank_statistics.scale_dependent_curvature"
+        display_name = "Scale-dependent curvature"
+
+        implementations = {
+            Topography: "topography_implementation",
+            Surface: "surface_implementation",
         }
-    )
 
-    #
-    # RMS gradient/slope
-    #
-    result.extend(
-        [
+    class Parameters(AnalysisImplementation.Parameters):
+        nb_points_per_decade: int = 10
+
+    def topography_implementation(
+        self, topography: Topography, folder: Folder = None, progress_recorder=None
+    ):
+        return scale_dependent_roughness_parameter(
+            topography,
+            progress_recorder,
+            2,
+            "Scale-dependent curvature",
+            "Curvature",
+            "Curvature in x-direction",
+            "Curvature in y-direction",
+            lambda x, y: (x + y) ** 2 / 4,
+            "1/2 Laplacian",
+            "{}⁻¹",
+            nb_points_per_decade=self.kwargs.nb_points_per_decade,
+            folder=folder,
+        )
+
+    def surface_implementation(
+        self, surface: Surface, folder: Folder = None, progress_recorder=None
+    ):
+        return scale_dependent_roughness_parameter_for_surface(
+            surface,
+            progress_recorder,
+            2,
+            "Scale-dependent curvature",
+            "Curvature",
+            "Curvature in x-direction",
+            "{}⁻¹",
+            nb_points_per_decade=self.kwargs.nb_points_per_decade,
+            folder=folder,
+        )
+
+
+class RoughnessParameters(AnalysisImplementation):
+    class Meta:
+        name = "topobank_statistics.roughness_parameters"
+        display_name = "Roughness parameters"
+
+        implementations = {
+            Topography: "topography_implementation",
+        }
+
+    def topography_implementation(
+        self, topography: Topography, folder: Folder = None, progress_recorder=None
+    ):
+        """Calculate roughness parameters for given topography.
+
+        Parameters
+        ----------
+        topography : topobank.manager.models.Topography
+        progress_recorder : ProgressRecorder or None
+        folder : str or None
+
+        Returns
+        -------
+        list of dicts where each dict has keys
+
+         quantity, e.g. 'RMS height' or 'RMS gradient'
+         direction, e.g. 'x' or None
+         from, e.g. 'profile (1D)' or 'area (2D)' or ''
+         symbol, e.g. 'Sq' or ''
+         value, a number or NaN
+         unit, e.g. 'nm'
+        """
+
+        # Get low level topography from SurfaceTopography model
+        topography = topography.topography()
+
+        # noinspection PyBroadException
+        try:
+            unit = topography.unit
+            inverse_unit = "{}⁻¹".format(unit)
+        except KeyError:
+            unit = None
+            inverse_unit = None
+
+        is_2D = topography.dim == 2
+        if not is_2D and not (topography.dim == 1):
+            raise ValueError(
+                "This analysis function can only handle 1D or 2D topographies."
+            )
+
+        FROM_1D = "profile (1D)"
+        FROM_2D = "area (2D)"
+
+        #
+        # RMS height
+        #
+        result = [
             {
-                "quantity": "RMS slope",
+                "quantity": "RMS height",
                 "from": FROM_1D,
-                "symbol": "R&Delta;q",
+                "symbol": "Rq",
                 "direction": "x",
-                "value": topography.rms_slope_from_profile(),  # x direction
-                "unit": 1,
+                "value": topography.rms_height_from_profile(),
+                "unit": unit,
             }
         ]
-    )
-    if is_2D:
+        if is_2D:
+            result.extend(
+                [
+                    {
+                        "quantity": "RMS height",
+                        "from": FROM_1D,
+                        "symbol": "Rq",
+                        "direction": "y",
+                        "value": topography.transpose().rms_height_from_profile(),
+                        "unit": unit,
+                    },
+                    {
+                        "quantity": "RMS height",
+                        "from": FROM_2D,
+                        "symbol": "Sq",
+                        "direction": None,
+                        "value": topography.rms_height_from_area(),
+                        "unit": unit,
+                    },
+                ]
+            )
+        #
+        # RMS curvature
+        #
+        if is_2D:
+            result.extend(
+                [
+                    {
+                        "quantity": "RMS curvature",
+                        "from": FROM_1D,
+                        "symbol": "",
+                        "direction": "y",
+                        "value": topography.transpose().rms_curvature_from_profile(),
+                        "unit": inverse_unit,
+                    },
+                    {
+                        "quantity": "RMS curvature",
+                        "from": FROM_2D,
+                        "symbol": "",
+                        "direction": None,
+                        "value": topography.rms_curvature_from_area(),
+                        "unit": inverse_unit,
+                    },
+                ]
+            )
+
+        # RMS curvature in x direction is needed for 1D and 2D
+        result.append(
+            {
+                "quantity": "RMS curvature",
+                "from": FROM_1D,
+                "symbol": "",
+                "direction": "x",
+                "value": topography.rms_curvature_from_profile(),
+                "unit": inverse_unit,
+            }
+        )
+
+        #
+        # RMS gradient/slope
+        #
         result.extend(
             [
                 {
                     "quantity": "RMS slope",
                     "from": FROM_1D,
-                    "symbol": "R&Delta;q",  # HTML
-                    "direction": "y",
-                    "value": topography.transpose().rms_slope_from_profile(),  # y direction
+                    "symbol": "R&Delta;q",
+                    "direction": "x",
+                    "value": topography.rms_slope_from_profile(),  # x direction
                     "unit": 1,
-                },
+                }
+            ]
+        )
+        if is_2D:
+            result.extend(
+                [
+                    {
+                        "quantity": "RMS slope",
+                        "from": FROM_1D,
+                        "symbol": "R&Delta;q",  # HTML
+                        "direction": "y",
+                        "value": topography.transpose().rms_slope_from_profile(),  # y direction
+                        "unit": 1,
+                    },
+                    {
+                        "quantity": "RMS gradient",
+                        "from": FROM_2D,
+                        "symbol": "",
+                        "direction": None,
+                        "value": topography.rms_gradient(),
+                        "unit": 1,
+                    },
+                ]
+            )
+
+        #
+        # Bandwidth (pixel_size, scan_size), see GH #677
+        #
+        lower_bound, upper_bound = topography.bandwidth()
+        result.extend(
+            [
                 {
-                    "quantity": "RMS gradient",
-                    "from": FROM_2D,
+                    "quantity": "Bandwidth: lower bound",
+                    "from": FROM_2D if is_2D else FROM_1D,
                     "symbol": "",
                     "direction": None,
-                    "value": topography.rms_gradient(),
-                    "unit": 1,
+                    "value": lower_bound,
+                    "unit": unit,
+                },
+                {
+                    "quantity": "Bandwidth: upper bound",
+                    "from": FROM_2D if is_2D else FROM_1D,
+                    "symbol": "",
+                    "direction": None,
+                    "value": upper_bound,
+                    "unit": unit,
                 },
             ]
         )
 
-    #
-    # Bandwidth (pixel_size, scan_size), see GH #677
-    #
-    lower_bound, upper_bound = topography.bandwidth()
-    result.extend(
-        [
-            {
-                "quantity": "Bandwidth: lower bound",
-                "from": FROM_2D if is_2D else FROM_1D,
-                "symbol": "",
-                "direction": None,
-                "value": lower_bound,
-                "unit": unit,
-            },
-            {
-                "quantity": "Bandwidth: upper bound",
-                "from": FROM_2D if is_2D else FROM_1D,
-                "symbol": "",
-                "direction": None,
-                "value": upper_bound,
-                "unit": unit,
-            },
-        ]
-    )
-
-    return result
+        return result
 
 
 def _analysis_function(
@@ -948,7 +1045,7 @@ def _analysis_function(
     yunit,
     conv_2d_fac=1.0,
     conv_2d_exponent=0,
-    storage_prefix=None,
+    folder=None,
     **kwargs,
 ):
     topography_name = topography.name
@@ -1105,7 +1202,7 @@ def _analysis_function_for_surface(
     xname,
     xunit,
     yunit,
-    storage_prefix=None,
+    folder=None,
     **kwargs,
 ):
     """Calculate average analysis result for a surface."""
@@ -1165,3 +1262,14 @@ def _analysis_function_for_surface(
     )
 
     return result
+
+
+register_implementation(HeightDistribution)
+register_implementation(SlopeDistribution)
+register_implementation(CurvatureDistribution)
+register_implementation(PowerSpectralDensity)
+register_implementation(Autocorrelation)
+register_implementation(VariableBandwidth)
+register_implementation(ScaleDependentSlope)
+register_implementation(ScaleDependentCurvature)
+register_implementation(RoughnessParameters)

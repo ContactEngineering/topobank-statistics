@@ -3,16 +3,13 @@ import tempfile
 import numpy as np
 import openpyxl
 import pytest
-
 from topobank.analysis.models import AnalysisFunction
 from topobank.manager.utils import subjects_to_base64
-from topobank.testing.factories import (
-    TopographyAnalysisFactory,
-    Topography2DFactory,
-    SurfaceFactory,
-)
+from topobank.testing.factories import (SurfaceFactory, Topography2DFactory,
+                                        TopographyAnalysisFactory)
 
-from ..views import roughness_parameters_card_view, NUM_SIGNIFICANT_DIGITS_RMS_VALUES
+from topobank_statistics.views import (NUM_SIGNIFICANT_DIGITS_RMS_VALUES,
+                                       roughness_parameters_card_view)
 
 
 @pytest.mark.parametrize("file_format", ["txt", "xlsx"])
@@ -89,12 +86,14 @@ def test_roughness_params_download_as_txt(
         xlsx.get_sheet_by_name("INFORMATION")
 
 
-@pytest.mark.urls("topobank_statistics.tests.urls")
+@pytest.mark.urls("topobank_statistics.testing.urls")
 @pytest.mark.parametrize("template_flavor", ["list", "detail"])
 @pytest.mark.django_db
 def test_roughness_params_rounded(
-    api_rf, mocker, template_flavor, user_with_plugin, handle_usage_statistics
+    api_rf, mocker, template_flavor, user_with_plugin, handle_usage_statistics, settings
 ):
+    settings.DELETE_EXISTING_FILES = True
+
     def myfunc(topography, *args, **kwargs):
         """Return some fake values for testing rounding"""
         return [
@@ -141,7 +140,7 @@ def test_roughness_params_rounded(
         ]
 
     m = mocker.patch(
-        "topobank.analysis.registry.AnalysisFunctionImplementation.python_function",
+        "topobank.analysis.models.AnalysisFunction.eval",
         new_callable=mocker.PropertyMock,
     )
     m.return_value = myfunc
