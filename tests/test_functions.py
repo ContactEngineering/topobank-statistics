@@ -1,5 +1,4 @@
 import math
-from dataclasses import dataclass
 
 import numpy as np
 import pint
@@ -7,6 +6,7 @@ import pytest
 from numpy.testing import assert_allclose
 from SurfaceTopography import NonuniformLineScan, Topography
 from topobank.analysis.models import AnalysisFunction
+from topobank.testing.utils import FakeTopographyModel
 
 from topobank_statistics.functions import (Autocorrelation,
                                            CurvatureDistribution,
@@ -33,33 +33,6 @@ EXPECTED_KEYS_FOR_PLOT_CARD_ANALYSIS = sorted(
         "series",
     ]
 )
-
-
-###############################################################################
-# Helpers for doing tests
-###############################################################################
-
-
-@dataclass(frozen=True)
-class FakeTopographyModel:
-    """This model is used to create a Topography for being passed to analysis functions."""
-
-    t: Topography
-    name: str = "mytopo"
-    is_periodic: bool = False
-
-    def topography(self):
-        """Return low level topography."""
-        return self.t
-
-    def get_absolute_url(self):
-        return "some/url/"
-
-
-class DummyProgressRecorder:
-    def set_progress(self, a, nsteps):
-        """Do nothing."""
-        pass  # dummy
 
 
 ###############################################################################
@@ -637,7 +610,9 @@ def simple_surface():
 def test_psd_for_surface(simple_surface):
     """Testing PSD for an artificial surface."""
 
-    result = PowerSpectralDensity(nb_points_per_decade=3).surface_implementation(simple_surface)
+    result = PowerSpectralDensity(nb_points_per_decade=3).surface_implementation(
+        simple_surface
+    )
 
     expected_result = {
         "name": "Power-spectral density (PSD)",
@@ -697,7 +672,9 @@ def test_psd_for_surface(simple_surface):
 def test_autocorrelation_for_surface(simple_surface):
     """Testing autocorrelation for an artificial surface."""
 
-    result = Autocorrelation(nb_points_per_decade=3).surface_implementation(simple_surface)
+    result = Autocorrelation(nb_points_per_decade=3).surface_implementation(
+        simple_surface
+    )
 
     expected_result = {
         "name": "Height-difference autocorrelation function (ACF)",
@@ -821,7 +798,9 @@ def test_variable_bandwidth_for_surface(simple_surface):
 def test_scale_dependent_slope_for_surface(simple_surface):
     """Testing scale-dependent slope for an artificial surface."""
 
-    result = ScaleDependentSlope(nb_points_per_decade=3).surface_implementation(simple_surface)
+    result = ScaleDependentSlope(nb_points_per_decade=3).surface_implementation(
+        simple_surface
+    )
 
     expected_result = {
         "name": "Scale-dependent slope",
