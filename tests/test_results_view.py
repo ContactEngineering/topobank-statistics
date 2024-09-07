@@ -5,11 +5,16 @@ import openpyxl
 import pytest
 from topobank.analysis.models import AnalysisFunction
 from topobank.manager.utils import subjects_to_base64
-from topobank.testing.factories import (SurfaceFactory, Topography2DFactory,
-                                        TopographyAnalysisFactory)
+from topobank.testing.factories import (
+    SurfaceFactory,
+    Topography2DFactory,
+    TopographyAnalysisFactory,
+)
 
-from topobank_statistics.views import (NUM_SIGNIFICANT_DIGITS_RMS_VALUES,
-                                       roughness_parameters_card_view)
+from topobank_statistics.views import (
+    NUM_SIGNIFICANT_DIGITS_RMS_VALUES,
+    roughness_parameters_card_view,
+)
 
 
 @pytest.mark.parametrize("file_format", ["txt", "xlsx"])
@@ -94,7 +99,7 @@ def test_roughness_params_rounded(
 ):
     settings.DELETE_EXISTING_FILES = True
 
-    def myfunc(topography, *args, **kwargs):
+    def myfunc(*args, **kwargs):
         """Return some fake values for testing rounding"""
         return [
             {
@@ -155,6 +160,7 @@ def test_roughness_params_rounded(
         f"/plugins/statistics/card/roughness-parameters/{func.id}",
         {"function_id": func.id, "subjects": subjects_to_base64([topo])},
     )
+    assert m.call_count == 1
     request.user = topo.surface.creator
     request.session = {}
 
