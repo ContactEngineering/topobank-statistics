@@ -36,10 +36,10 @@ class HeightDistribution(AnalysisImplementation):
         wfac: int = 5
 
     def topography_implementation(
-        self, topography: Topography, folder: Folder = None, progress_recorder=None
+        self, analysis, folder: Folder = None, progress_recorder=None
     ):
         # Get low level topography from SurfaceTopography model
-        topography = topography.topography()
+        topography = analysis.subject.topography()
 
         # Get parameters
         bins = self.kwargs.bins
@@ -212,11 +212,11 @@ class SlopeDistribution(AnalysisImplementation):
         wfac: int = 5
 
     def topography_implementation(
-        self, topography: Topography, folder: Folder = None, progress_recorder=None
+        self, analysis, progress_recorder=None
     ):
         """Calculates slope distribution for given topography."""
         # Get low level topography from SurfaceTopography model
-        topography = topography.topography()
+        topography = analysis.subject.topography()
 
         # Get parameters
         bins = self.kwargs.bins
@@ -318,10 +318,10 @@ class CurvatureDistribution(AnalysisImplementation):
         wfac: int = 5
 
     def topography_implementation(
-        self, topography: Topography, folder: Folder = None, progress_recorder=None
+        self, analysis, progress_recorder=None
     ):
         # Get low level topography from SurfaceTopography model
-        topography = topography.topography()
+        topography = analysis.subject.topography()
 
         bins = self.kwargs.bins
         wfac = self.kwargs.wfac
@@ -419,12 +419,12 @@ class PowerSpectralDensity(AnalysisImplementation):
         nb_points_per_decade: int = 10
 
     def topography_implementation(
-        self, topography: Topography, folder: Folder = None, progress_recorder=None
+        self, analysis, progress_recorder=None
     ):
         """Calculate Power Spectrum for given topography."""
         # Get low level topography from SurfaceTopography model
         return _analysis_function(
-            topography,
+            analysis.subject,
             "power_spectrum_from_profile",
             "power_spectrum_from_area",
             "Power-spectral density (PSD)",
@@ -439,17 +439,17 @@ class PowerSpectralDensity(AnalysisImplementation):
             conv_2d_exponent=1,
             window=self.kwargs.window,
             nb_points_per_decade=self.kwargs.nb_points_per_decade,
-            folder=folder,
+            folder=analysis.folder,
         )
 
     def surface_implementation(
-        self, surface: Surface, folder: Folder = None, progress_recorder=None
+        self, analysis, progress_recorder=None
     ):
         """Calculate Power Spectrum for given topography."""
         # Get low level topography from SurfaceTopography model
 
         return _analysis_function_for_surface(
-            surface,
+            analysis.subject,
             progress_recorder,
             "power_spectrum_from_profile",
             "Power-spectral density (PSD)",
@@ -460,7 +460,7 @@ class PowerSpectralDensity(AnalysisImplementation):
             "{}³",
             window=self.kwargs.window,
             nb_points_per_decade=self.kwargs.nb_points_per_decade,
-            folder=folder,
+            folder=analysis.folder,
         )
 
 
@@ -479,10 +479,10 @@ class Autocorrelation(AnalysisImplementation):
         nb_points_per_decade: int = 10
 
     def topography_implementation(
-        self, topography: Topography, folder: Folder = None, progress_recorder=None
+        self, analysis, progress_recorder=None
     ):
         return _analysis_function(
-            topography,
+            analysis.subject,
             "autocorrelation_from_profile",
             "autocorrelation_from_area",
             "Height-difference autocorrelation function (ACF)",
@@ -494,14 +494,14 @@ class Autocorrelation(AnalysisImplementation):
             "{}",
             "{}²",
             nb_points_per_decade=self.kwargs.nb_points_per_decade,
-            folder=folder,
+            folder=analysis.folder,
         )
 
     def surface_implementation(
-        self, surface: Surface, folder: Folder = None, progress_recorder=None
+        self, analysis, progress_recorder=None
     ):
         return _analysis_function_for_surface(
-            surface,
+            analysis.subject,
             progress_recorder,
             "autocorrelation_from_profile",
             "Height-difference autocorrelation function (ACF)",
@@ -511,7 +511,7 @@ class Autocorrelation(AnalysisImplementation):
             "{}",
             "{}²",
             nb_points_per_decade=self.kwargs.nb_points_per_decade,
-            folder=folder,
+            folder=analysis.folder,
         )
 
 
@@ -527,10 +527,10 @@ class VariableBandwidth(AnalysisImplementation):
         }
 
     def topography_implementation(
-        self, topography: Topography, folder: Folder = None, progress_recorder=None
+        self, analysis, progress_recorder=None
     ):
         return _analysis_function(
-            topography,
+            analysis.subject,
             "variable_bandwidth_from_profile",
             "variable_bandwidth_from_area",
             "Variable-bandwidth analysis",
@@ -541,17 +541,17 @@ class VariableBandwidth(AnalysisImplementation):
             "Areal decomposition",
             "{}",
             "{}",
-            folder=folder,
+            folder=analysis.folder,
         )
 
     def surface_implementation(
-        self, surface: Surface, folder: Folder = None, progress_recorder=None
+        self, analysis, progress_recorder=None
     ):
         # Resampling not possible for topographies, but all function for same name must
         # have identical signatures. We hence simply fix `nb_points_per_decade` here.
         nb_points_per_decade = 10
         return _analysis_function_for_surface(
-            surface,
+            analysis.subject,
             progress_recorder,
             "variable_bandwidth_from_profile",
             "Variable-bandwidth analysis",
@@ -561,7 +561,7 @@ class VariableBandwidth(AnalysisImplementation):
             "{}",
             "{}",
             nb_points_per_decade=nb_points_per_decade,
-            folder=folder,
+            folder=analysis.folder,
         )
 
 
@@ -771,10 +771,10 @@ class ScaleDependentSlope(AnalysisImplementation):
         nb_points_per_decade: int = 10
 
     def topography_implementation(
-        self, topography: Topography, folder: Folder = None, progress_recorder=None
+        self, analysis, progress_recorder=None
     ):
         return scale_dependent_roughness_parameter(
-            topography,
+            analysis.subject,
             progress_recorder,
             1,
             "Scale-dependent slope",
@@ -785,14 +785,14 @@ class ScaleDependentSlope(AnalysisImplementation):
             "Gradient",
             "1",
             nb_points_per_decade=self.kwargs.nb_points_per_decade,
-            folder=folder,
+            folder=analysis.folder,
         )
 
     def surface_implementation(
-        self, surface: Surface, folder: Folder = None, progress_recorder=None
+        self, analysis, progress_recorder=None
     ):
         return scale_dependent_roughness_parameter_for_surface(
-            surface,
+            analysis.subject,
             progress_recorder,
             1,
             "Scale-dependent slope",
@@ -800,7 +800,7 @@ class ScaleDependentSlope(AnalysisImplementation):
             "Slope in x-direction",
             "1",
             nb_points_per_decade=self.kwargs.nb_points_per_decade,
-            folder=folder,
+            folder=analysis.folder,
         )
 
 
@@ -819,10 +819,10 @@ class ScaleDependentCurvature(AnalysisImplementation):
         nb_points_per_decade: int = 10
 
     def topography_implementation(
-        self, topography: Topography, folder: Folder = None, progress_recorder=None
+        self, analysis, progress_recorder=None
     ):
         return scale_dependent_roughness_parameter(
-            topography,
+            analysis.subject,
             progress_recorder,
             2,
             "Scale-dependent curvature",
@@ -833,14 +833,14 @@ class ScaleDependentCurvature(AnalysisImplementation):
             "1/2 Laplacian",
             "{}⁻¹",
             nb_points_per_decade=self.kwargs.nb_points_per_decade,
-            folder=folder,
+            folder=analysis.folder,
         )
 
     def surface_implementation(
-        self, surface: Surface, folder: Folder = None, progress_recorder=None
+        self, analysis, progress_recorder=None
     ):
         return scale_dependent_roughness_parameter_for_surface(
-            surface,
+            analysis.subject,
             progress_recorder,
             2,
             "Scale-dependent curvature",
@@ -848,7 +848,7 @@ class ScaleDependentCurvature(AnalysisImplementation):
             "Curvature in x-direction",
             "{}⁻¹",
             nb_points_per_decade=self.kwargs.nb_points_per_decade,
-            folder=folder,
+            folder=analysis.folder,
         )
 
 
@@ -863,7 +863,7 @@ class RoughnessParameters(AnalysisImplementation):
         }
 
     def topography_implementation(
-        self, topography: Topography, folder: Folder = None, progress_recorder=None
+        self, analysis, progress_recorder=None
     ):
         """Calculate roughness parameters for given topography.
 
@@ -886,7 +886,7 @@ class RoughnessParameters(AnalysisImplementation):
         """
 
         # Get low level topography from SurfaceTopography model
-        topography = topography.topography()
+        topography = analysis.subject.topography()
 
         # noinspection PyBroadException
         try:

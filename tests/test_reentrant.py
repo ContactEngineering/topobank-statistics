@@ -6,12 +6,15 @@ import pytest
 from SurfaceTopography.Exceptions import ReentrantDataError
 from SurfaceTopography.IO import read_topography
 
-from topobank_statistics.functions import (Autocorrelation,
-                                           CurvatureDistribution,
-                                           PowerSpectralDensity,
-                                           ScaleDependentCurvature,
-                                           ScaleDependentSlope,
-                                           SlopeDistribution)
+from topobank.testing.utils import AnalysisResultMock
+from topobank_statistics.functions import (
+    Autocorrelation,
+    CurvatureDistribution,
+    PowerSpectralDensity,
+    ScaleDependentCurvature,
+    ScaleDependentSlope,
+    SlopeDistribution,
+)
 
 from .test_functions import FakeTopographyModel
 
@@ -45,4 +48,4 @@ def reentrant_line_scan():
 def test_raises_reentrant_data_error(reentrant_line_scan, analysis_class):
     topo = FakeTopographyModel(reentrant_line_scan)
     with pytest.raises(ReentrantDataError):
-        analysis_class().topography_implementation(topo)
+        analysis_class().topography_implementation(AnalysisResultMock(topo))
