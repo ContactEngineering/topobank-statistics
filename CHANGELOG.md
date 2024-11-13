@@ -1,5 +1,9 @@
 # Changelog for plugin *topobank-statistics*
 
+## 1.4.0 (2024-11-13)
+
+- MAINT: Updates for API changes in topobank 1.50.0
+
 ## 1.3.0 (2024-05-12)
 
 - ENH: Use new `AnalysisCard` component
