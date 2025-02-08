@@ -3,14 +3,18 @@ from typing import Union
 import numpy as np
 from SurfaceTopography.Container.Averaging import log_average
 from SurfaceTopography.Container.common import suggest_length_unit
-from SurfaceTopography.Container.ScaleDependentStatistics import \
-    scale_dependent_statistical_property
-from SurfaceTopography.Exceptions import (CannotPerformAnalysisError,
-                                          ReentrantDataError)
-from topobank.analysis.functions import (AnalysisImplementation,
-                                         ContainerProxy, make_alert_entry,
-                                         reasonable_bins_argument, wrap_series,
-                                         VIZ_SERIES)
+from SurfaceTopography.Container.ScaleDependentStatistics import (
+    scale_dependent_statistical_property,
+)
+from SurfaceTopography.Exceptions import CannotPerformAnalysisError, ReentrantDataError
+from topobank.analysis.workflows import (
+    WorkflowImplementation,
+    ContainerProxy,
+    make_alert_entry,
+    reasonable_bins_argument,
+    wrap_series,
+    VIZ_SERIES,
+)
 from topobank.analysis.registry import register_implementation
 from topobank.files.models import Folder
 from topobank.manager.models import Surface, Topography
@@ -21,7 +25,7 @@ VIZ_ROUGHNESS_PARAMETERS = "roughness-parameters"
 GAUSSIAN_FIT_SERIES_NAME = "Gaussian fit"
 
 
-class HeightDistribution(AnalysisImplementation):
+class HeightDistribution(WorkflowImplementation):
     class Meta:
         name = "topobank_statistics.height_distribution"
         display_name = "Height distribution"
@@ -31,7 +35,7 @@ class HeightDistribution(AnalysisImplementation):
             Topography: "topography_implementation",
         }
 
-    class Parameters(AnalysisImplementation.Parameters):
+    class Parameters(WorkflowImplementation.Parameters):
         bins: Union[int, None] = None
         wfac: int = 5
 
@@ -197,7 +201,7 @@ def _moments_histogram_gaussian(
     return scalars, series
 
 
-class SlopeDistribution(AnalysisImplementation):
+class SlopeDistribution(WorkflowImplementation):
     class Meta:
         name = "topobank_statistics.slope_distribution"
         display_name = "Slope distribution"
@@ -207,13 +211,11 @@ class SlopeDistribution(AnalysisImplementation):
             Topography: "topography_implementation",
         }
 
-    class Parameters(AnalysisImplementation.Parameters):
+    class Parameters(WorkflowImplementation.Parameters):
         bins: Union[int, None] = None
         wfac: int = 5
 
-    def topography_implementation(
-        self, analysis, progress_recorder=None
-    ):
+    def topography_implementation(self, analysis, progress_recorder=None):
         """Calculates slope distribution for given topography."""
         # Get low level topography from SurfaceTopography model
         topography = analysis.subject.topography()
@@ -303,7 +305,7 @@ class SlopeDistribution(AnalysisImplementation):
         )
 
 
-class CurvatureDistribution(AnalysisImplementation):
+class CurvatureDistribution(WorkflowImplementation):
     class Meta:
         name = "topobank_statistics.curvature_distribution"
         display_name = "Curvature distribution"
@@ -313,13 +315,11 @@ class CurvatureDistribution(AnalysisImplementation):
             Topography: "topography_implementation",
         }
 
-    class Parameters(AnalysisImplementation.Parameters):
+    class Parameters(WorkflowImplementation.Parameters):
         bins: Union[list[float], int, None] = None
         wfac: int = 5
 
-    def topography_implementation(
-        self, analysis, progress_recorder=None
-    ):
+    def topography_implementation(self, analysis, progress_recorder=None):
         # Get low level topography from SurfaceTopography model
         topography = analysis.subject.topography()
 
@@ -403,7 +403,7 @@ class CurvatureDistribution(AnalysisImplementation):
         )
 
 
-class PowerSpectralDensity(AnalysisImplementation):
+class PowerSpectralDensity(WorkflowImplementation):
     class Meta:
         name = "topobank_statistics.power_spectral_density"
         display_name = "Power spectrum"
@@ -414,13 +414,11 @@ class PowerSpectralDensity(AnalysisImplementation):
             Surface: "surface_implementation",
         }
 
-    class Parameters(AnalysisImplementation.Parameters):
+    class Parameters(WorkflowImplementation.Parameters):
         window: Union[str, None] = None
         nb_points_per_decade: int = 10
 
-    def topography_implementation(
-        self, analysis, progress_recorder=None
-    ):
+    def topography_implementation(self, analysis, progress_recorder=None):
         """Calculate Power Spectrum for given topography."""
         # Get low level topography from SurfaceTopography model
         return _analysis_function(
@@ -442,9 +440,7 @@ class PowerSpectralDensity(AnalysisImplementation):
             folder=analysis.folder,
         )
 
-    def surface_implementation(
-        self, analysis, progress_recorder=None
-    ):
+    def surface_implementation(self, analysis, progress_recorder=None):
         """Calculate Power Spectrum for given topography."""
         # Get low level topography from SurfaceTopography model
 
@@ -464,7 +460,7 @@ class PowerSpectralDensity(AnalysisImplementation):
         )
 
 
-class Autocorrelation(AnalysisImplementation):
+class Autocorrelation(WorkflowImplementation):
     class Meta:
         name = "topobank_statistics.autocorrelation"
         display_name = "Autocorrelation"
@@ -475,12 +471,10 @@ class Autocorrelation(AnalysisImplementation):
             Surface: "surface_implementation",
         }
 
-    class Parameters(AnalysisImplementation.Parameters):
+    class Parameters(WorkflowImplementation.Parameters):
         nb_points_per_decade: int = 10
 
-    def topography_implementation(
-        self, analysis, progress_recorder=None
-    ):
+    def topography_implementation(self, analysis, progress_recorder=None):
         return _analysis_function(
             analysis.subject,
             "autocorrelation_from_profile",
@@ -497,9 +491,7 @@ class Autocorrelation(AnalysisImplementation):
             folder=analysis.folder,
         )
 
-    def surface_implementation(
-        self, analysis, progress_recorder=None
-    ):
+    def surface_implementation(self, analysis, progress_recorder=None):
         return _analysis_function_for_surface(
             analysis.subject,
             progress_recorder,
@@ -515,7 +507,7 @@ class Autocorrelation(AnalysisImplementation):
         )
 
 
-class VariableBandwidth(AnalysisImplementation):
+class VariableBandwidth(WorkflowImplementation):
     class Meta:
         name = "topobank_statistics.variable_bandwidth"
         display_name = "Variable bandwidth"
@@ -526,9 +518,7 @@ class VariableBandwidth(AnalysisImplementation):
             Surface: "surface_implementation",
         }
 
-    def topography_implementation(
-        self, analysis, progress_recorder=None
-    ):
+    def topography_implementation(self, analysis, progress_recorder=None):
         return _analysis_function(
             analysis.subject,
             "variable_bandwidth_from_profile",
@@ -544,9 +534,7 @@ class VariableBandwidth(AnalysisImplementation):
             folder=analysis.folder,
         )
 
-    def surface_implementation(
-        self, analysis, progress_recorder=None
-    ):
+    def surface_implementation(self, analysis, progress_recorder=None):
         # Resampling not possible for topographies, but all function for same name must
         # have identical signatures. We hence simply fix `nb_points_per_decade` here.
         nb_points_per_decade = 10
@@ -756,7 +744,7 @@ def scale_dependent_roughness_parameter_for_surface(
     )
 
 
-class ScaleDependentSlope(AnalysisImplementation):
+class ScaleDependentSlope(WorkflowImplementation):
     class Meta:
         name = "topobank_statistics.scale_dependent_slope"
         display_name = "Scale-dependent slope"
@@ -767,12 +755,10 @@ class ScaleDependentSlope(AnalysisImplementation):
             Surface: "surface_implementation",
         }
 
-    class Parameters(AnalysisImplementation.Parameters):
+    class Parameters(WorkflowImplementation.Parameters):
         nb_points_per_decade: int = 10
 
-    def topography_implementation(
-        self, analysis, progress_recorder=None
-    ):
+    def topography_implementation(self, analysis, progress_recorder=None):
         return scale_dependent_roughness_parameter(
             analysis.subject,
             progress_recorder,
@@ -788,9 +774,7 @@ class ScaleDependentSlope(AnalysisImplementation):
             folder=analysis.folder,
         )
 
-    def surface_implementation(
-        self, analysis, progress_recorder=None
-    ):
+    def surface_implementation(self, analysis, progress_recorder=None):
         return scale_dependent_roughness_parameter_for_surface(
             analysis.subject,
             progress_recorder,
@@ -804,7 +788,7 @@ class ScaleDependentSlope(AnalysisImplementation):
         )
 
 
-class ScaleDependentCurvature(AnalysisImplementation):
+class ScaleDependentCurvature(WorkflowImplementation):
     class Meta:
         name = "topobank_statistics.scale_dependent_curvature"
         display_name = "Scale-dependent curvature"
@@ -815,12 +799,10 @@ class ScaleDependentCurvature(AnalysisImplementation):
             Surface: "surface_implementation",
         }
 
-    class Parameters(AnalysisImplementation.Parameters):
+    class Parameters(WorkflowImplementation.Parameters):
         nb_points_per_decade: int = 10
 
-    def topography_implementation(
-        self, analysis, progress_recorder=None
-    ):
+    def topography_implementation(self, analysis, progress_recorder=None):
         return scale_dependent_roughness_parameter(
             analysis.subject,
             progress_recorder,
@@ -836,9 +818,7 @@ class ScaleDependentCurvature(AnalysisImplementation):
             folder=analysis.folder,
         )
 
-    def surface_implementation(
-        self, analysis, progress_recorder=None
-    ):
+    def surface_implementation(self, analysis, progress_recorder=None):
         return scale_dependent_roughness_parameter_for_surface(
             analysis.subject,
             progress_recorder,
@@ -852,7 +832,7 @@ class ScaleDependentCurvature(AnalysisImplementation):
         )
 
 
-class RoughnessParameters(AnalysisImplementation):
+class RoughnessParameters(WorkflowImplementation):
     class Meta:
         name = "topobank_statistics.roughness_parameters"
         display_name = "Roughness parameters"
@@ -862,9 +842,7 @@ class RoughnessParameters(AnalysisImplementation):
             Topography: "topography_implementation",
         }
 
-    def topography_implementation(
-        self, analysis, progress_recorder=None
-    ):
+    def topography_implementation(self, analysis, progress_recorder=None):
         """Calculate roughness parameters for given topography.
 
         Parameters

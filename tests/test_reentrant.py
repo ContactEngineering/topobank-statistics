@@ -7,7 +7,7 @@ from SurfaceTopography.Exceptions import ReentrantDataError
 from SurfaceTopography.IO import read_topography
 
 from topobank.testing.utils import AnalysisResultMock
-from topobank_statistics.functions import (
+from topobank_statistics.workflows import (
     Autocorrelation,
     CurvatureDistribution,
     PowerSpectralDensity,

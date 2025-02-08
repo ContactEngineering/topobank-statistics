@@ -8,7 +8,7 @@ from SurfaceTopography import NonuniformLineScan, Topography
 from topobank.analysis.models import AnalysisFunction
 from topobank.testing.utils import FakeTopographyModel, AnalysisResultMock
 
-from topobank_statistics.functions import (
+from topobank_statistics.workflows import (
     Autocorrelation,
     CurvatureDistribution,
     HeightDistribution,

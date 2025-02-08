@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .functions import APP_NAME, VIZ_ROUGHNESS_PARAMETERS
+from .workflows import APP_NAME, VIZ_ROUGHNESS_PARAMETERS
 from .views import roughness_parameters_card_view
 
 # App name determines the internal name space

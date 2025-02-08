@@ -26,6 +26,6 @@ class StatisticsPluginConfig(PluginConfig):
 
     def ready(self):
         # make sure the functions are registered now
-        import topobank_statistics.functions  # noqa: F401
+        import topobank_statistics.workflows  # noqa: F401
         import topobank_statistics.views  # noqa: F401
         import topobank_statistics.downloads  # noqa: F401
