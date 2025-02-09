@@ -101,8 +101,8 @@ def download_roughness_parameters_to_txt(request, analyses):
     for i, analysis in enumerate(analyses):
         if i == 0:
             f.write(
-                "# {}\n".format(analysis.function)
-                + "# {}\n".format("=" * len(str(analysis.function)))
+                "# {}\n".format(analysis.function.display_name)
+                + "# {}\n".format("=" * len(str(analysis.function.display_name)))
             )
 
             f.write(

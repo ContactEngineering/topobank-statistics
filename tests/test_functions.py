@@ -898,15 +898,15 @@ def test_sync_analysis_functions():  # TODO move to main project
 
     expected_funcs_names = sorted(
         [
-            "Height distribution",
-            "Slope distribution",
-            "Curvature distribution",
-            "Power spectrum",
-            "Autocorrelation",
-            "Variable bandwidth",
-            "Roughness parameters",
-            "Scale-dependent slope",
-            "Scale-dependent curvature",
+            "topobank_statistics.height_distribution",
+            "topobank_statistics.slope_distribution",
+            "topobank_statistics.curvature_distribution",
+            "topobank_statistics.power_spectral_density",
+            "topobank_statistics.autocorrelation",
+            "topobank_statistics.variable_bandwidth",
+            "topobank_statistics.roughness_parameters",
+            "topobank_statistics.scale_dependent_slope",
+            "topobank_statistics.scale_dependent_curvature",
         ]
     )
 

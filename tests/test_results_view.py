@@ -25,7 +25,7 @@ def test_roughness_params_download_as_txt(
     # This is only a simple test which checks whether the file can be downloaded
     t1, t2 = two_topos
 
-    func = AnalysisFunction.objects.get(name="Roughness parameters")
+    func = AnalysisFunction.objects.get(name="topobank_statistics.roughness_parameters")
 
     kwargs = {}
 
@@ -153,7 +153,7 @@ def test_roughness_params_rounded(
     surf = SurfaceFactory(creator=user_with_plugin)
     topo = Topography2DFactory(size_x=1, size_y=1, surface=surf)
 
-    func = AnalysisFunction.objects.get(name="Roughness parameters")
+    func = AnalysisFunction.objects.get(name="topobank_statistics.roughness_parameters")
     TopographyAnalysisFactory(subject_topography=topo, function=func)
 
     request = api_rf.get(
