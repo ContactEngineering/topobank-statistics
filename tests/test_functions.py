@@ -6,18 +6,16 @@ import pytest
 from numpy.testing import assert_allclose
 from SurfaceTopography import NonuniformLineScan, Topography
 from topobank.analysis.models import AnalysisFunction
-from topobank.testing.utils import FakeTopographyModel, AnalysisResultMock
+from topobank.testing.utils import AnalysisResultMock, FakeTopographyModel
 
-from topobank_statistics.workflows import (
-    Autocorrelation,
-    CurvatureDistribution,
-    HeightDistribution,
-    PowerSpectralDensity,
-    RoughnessParameters,
-    ScaleDependentSlope,
-    SlopeDistribution,
-    VariableBandwidth,
-)
+from topobank_statistics.workflows import (Autocorrelation,
+                                           CurvatureDistribution,
+                                           HeightDistribution,
+                                           PowerSpectralDensity,
+                                           RoughnessParameters,
+                                           ScaleDependentSlope,
+                                           SlopeDistribution,
+                                           VariableBandwidth)
 
 EXPECTED_KEYS_FOR_DIST_ANALYSIS = sorted(
     ["name", "scalars", "xlabel", "ylabel", "xunit", "yunit", "series"]
@@ -476,7 +474,7 @@ def test_roughness_parameters(simple_linear_2d_topography):
     )
 
     ureg = pint.UnitRegistry()
-    ureg.default_format = "~P"
+    ureg.formatter.default_format = "~P"
 
     expected = [
         {

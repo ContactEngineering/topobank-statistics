@@ -1,5 +1,9 @@
 # Changelog for plugin *topobank-statistics*
 
+## 1.5.1 (not yet released)
+
+- MAINT: Fixed pint deprecation, closes #47
+
 ## 1.5.0 (2025-02-09)
 
 - MAINT: Updates for API changes in topobank 1.55.0

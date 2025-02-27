@@ -8,13 +8,10 @@ import pandas as pd
 import pint
 from django.http import HttpResponse
 from django.utils.text import slugify
-
+from topobank.analysis.downloads import (analyses_meta_data_dataframe,
+                                         analysis_header_for_txt_file,
+                                         publications_urls)
 from topobank.analysis.registry import register_download_function
-from topobank.analysis.downloads import (
-    publications_urls,
-    analyses_meta_data_dataframe,
-    analysis_header_for_txt_file,
-)
 
 from .workflows import VIZ_ROUGHNESS_PARAMETERS
 
@@ -22,7 +19,7 @@ from .workflows import VIZ_ROUGHNESS_PARAMETERS
 def roughness_parameters_data_frame(analyses):
     # Unit conversion
     ureg = pint.UnitRegistry()
-    ureg.default_format = "~P"
+    ureg.formatter.default_format = "~P"
 
     # Collect data
     data = []
