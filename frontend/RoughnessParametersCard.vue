@@ -13,6 +13,7 @@ DataTable.use(DataTablesLib);
 import {formatExponential} from "topobank/utils/formatting";
 
 import AnalysisCard from "topobank/analysis/AnalysisCard.vue";
+import {subjectsToBase64} from "topobank/utils/api";
 
 const props = defineProps({
     apiUrl: {
@@ -23,11 +24,18 @@ const props = defineProps({
         type: String,
         default: '/ui/analysis-detail/'
     },
-    functionId: Number,
-    functionName: String,
-    subjects: String,
-    txtDownloadUrl: String,
-    xlsxDownloadUrl: String
+    functionId: {
+        type: Number,
+        required: true
+    },
+    functionName: {
+        type: String,
+        required: true
+    },
+    subjects: {
+        type: Object,
+        required: true
+    },
 });
 
 // Displayed data
@@ -47,7 +55,10 @@ const _columns = ref([
     },
     {data: 'quantity', title: 'Quantity'},
     {data: 'from', title: 'From'},
-    {data: 'symbol', title: '<span title="Symbol according to ASME B46.1">Sym. 🛈</span>'},
+    {
+        data: 'symbol',
+        title: '<span title="Symbol according to ASME B46.1">Sym. 🛈</span>'
+    },
     {data: 'direction', title: 'Direct.'},
     {
         data: 'value', title: 'Value', render: function (x) {
@@ -72,7 +83,7 @@ const analysisIds = computed(() => {
 
 function updateCard() {
     /* Fetch JSON describing the card */
-    axios.get(`${props.apiUrl}/${props.functionId}?subjects=${props.subjects}`).then(response => {
+    axios.get(`${props.apiUrl}/${props.functionId}?subjects=${subjectsToBase64(props.subjects)}`).then(response => {
         _analyses.value = response.data.analyses;
         /** replace null in value with NaN
          * This is needed because we cannot pass NaN through JSON without
@@ -103,7 +114,8 @@ function updateCard() {
                   @someTasksFinished="updateCard"
                   @refreshButtonClicked="updateCard">
         <template #dropdowns>
-            <BDropdownDivider v-if="_analyses != null && _analyses.length > 0"></BDropdownDivider>
+            <BDropdownDivider
+                v-if="_analyses != null && _analyses.length > 0"></BDropdownDivider>
             <BDropdownItem v-for="analysis in _analyses"
                            :href="`/analysis/download/${analysisIds}/csv`">
                 Download CSV
@@ -114,11 +126,11 @@ function updateCard() {
             </BDropdownItem>
         </template>
         <DataTable class="table table-striped table-bordered"
-                    :column-defs="_columnDefs"
-                    :columns="_columns"
-                    :data="_data"
-                    responsive="yes"
-                    scroll-x="yes">
+                   :column-defs="_columnDefs"
+                   :columns="_columns"
+                   :data="_data"
+                   responsive="yes"
+                   scroll-x="yes">
         </DataTable>
     </AnalysisCard>
 </template>
