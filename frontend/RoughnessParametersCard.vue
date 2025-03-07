@@ -14,6 +14,7 @@ import { formatExponential } from "topobank/utils/formatting";
 import { subjectsToBase64 } from "topobank/utils/api";
 
 import AnalysisCard from "topobank/analysis/AnalysisCard.vue";
+import {subjectsToBase64} from "topobank/utils/api";
 
 const {show} = useToastController();
 
@@ -24,7 +25,7 @@ const props = defineProps({
     },
     detailUrl: {
         type: String,
-        default: "/ui/html/analysis-detail/"
+        default: '/ui/analysis-detail/'
     },
     enlarged: {
         type: Boolean,
@@ -41,7 +42,7 @@ const props = defineProps({
     subjects: {
         type: Object,
         required: true
-    }
+    },
 });
 
 // Displayed data
@@ -134,7 +135,8 @@ function updateCard() {
                   @refreshButtonClicked="updateCard"
                   @someTasksFinished="updateCard">
         <template #dropdowns>
-            <BDropdownDivider v-if="_analyses != null && _analyses.length > 0"></BDropdownDivider>
+            <BDropdownDivider
+                v-if="_analyses != null && _analyses.length > 0"></BDropdownDivider>
             <BDropdownItem v-for="analysis in _analyses"
                            :href="`/analysis/download/${analysisIds}/csv`">
                 Download CSV
