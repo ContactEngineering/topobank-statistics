@@ -11,10 +11,9 @@ import DataTablesLib from "datatables.net-bs5";
 DataTable.use(DataTablesLib);
 
 import { formatExponential } from "topobank/utils/formatting";
-import { subjectsToBase64 } from "topobank/utils/api";
+import {subjectsToBase64} from "topobank/utils/api";
 
 import AnalysisCard from "topobank/analysis/AnalysisCard.vue";
-import {subjectsToBase64} from "topobank/utils/api";
 
 const {show} = useToastController();
 
