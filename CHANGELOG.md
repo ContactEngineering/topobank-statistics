@@ -1,7 +1,9 @@
 # Changelog for plugin *topobank-statistics*
 
-## 1.5.1 (not yet released)
+## 1.6.0 (2025-03-16)
 
+- MAINT: Updates for API changes in topobank 1.57.1
+- MAINT: Moved rounding function form topobank to utils.py
 - MAINT: Fixed pint deprecation, closes #47
 
 ## 1.5.0 (2025-02-09)

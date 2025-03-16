@@ -6,8 +6,10 @@ from rest_framework.response import Response
 from trackstats.models import Metric
 
 from topobank.usage_stats.utils import increase_statistics_by_date_and_object
-from topobank.analysis.utils import round_to_significant_digits
-from topobank.analysis.controller import AnalysisController
+from topobank.analysis.v1.controller import AnalysisController
+
+from .utils import round_to_significant_digits
+
 
 NUM_SIGNIFICANT_DIGITS_RMS_VALUES = 5
 
