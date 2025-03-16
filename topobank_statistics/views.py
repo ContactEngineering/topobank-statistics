@@ -34,7 +34,7 @@ def roughness_parameters_card_view(request, **kwargs):
     #
     # for statistics, count views per function
     #
-    increase_statistics_by_date_and_object(Metric.objects.ANALYSES_RESULTS_VIEW_COUNT, obj=controller.function)
+    increase_statistics_by_date_and_object(Metric.objects.ANALYSES_RESULTS_VIEW_COUNT, obj=controller.workflow)
 
     #
     # Trigger missing analyses

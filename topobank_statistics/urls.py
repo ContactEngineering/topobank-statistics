@@ -12,7 +12,7 @@ urlpatterns = [
     # * Return state of analyses
     # * Return plot configuration for finished analyses
     path(
-        f'card/{VIZ_ROUGHNESS_PARAMETERS}/<int:function_id>',
+        f'card/{VIZ_ROUGHNESS_PARAMETERS}/<str:workflow>',
         view=roughness_parameters_card_view,
         name=f'card-{VIZ_ROUGHNESS_PARAMETERS}'
     ),

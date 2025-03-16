@@ -157,8 +157,8 @@ def test_roughness_params_rounded(
     TopographyAnalysisFactory(subject_topography=topo, function=func)
 
     request = api_rf.get(
-        f"/plugins/statistics/card/roughness-parameters/{func.id}",
-        {"function_id": func.id, "subjects": subjects_to_base64([topo])},
+        f"/plugins/statistics/card/roughness-parameters/{func.name}",
+        {"workflow": func.name, "subjects": subjects_to_base64([topo])},
     )
     assert m.call_count == 1
     request.user = topo.surface.creator
