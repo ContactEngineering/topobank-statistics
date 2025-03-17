@@ -5,16 +5,11 @@ import openpyxl
 import pytest
 from topobank.analysis.models import AnalysisFunction
 from topobank.manager.utils import subjects_to_base64
-from topobank.testing.factories import (
-    SurfaceFactory,
-    Topography2DFactory,
-    TopographyAnalysisFactory,
-)
+from topobank.testing.factories import (SurfaceFactory, Topography2DFactory,
+                                        TopographyAnalysisFactory)
 
-from topobank_statistics.views import (
-    NUM_SIGNIFICANT_DIGITS_RMS_VALUES,
-    roughness_parameters_card_view,
-)
+from topobank_statistics.views import (NUM_SIGNIFICANT_DIGITS_RMS_VALUES,
+                                       roughness_parameters_card_view)
 
 
 @pytest.mark.parametrize("file_format", ["txt", "xlsx"])
@@ -76,8 +71,6 @@ def test_roughness_params_download_as_txt(
         tmp.seek(0)
 
         xlsx = openpyxl.load_workbook(tmp.name)
-
-        print(xlsx.sheetnames)
 
         assert len(xlsx.worksheets) == 2
 

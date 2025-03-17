@@ -30,10 +30,6 @@ const props = defineProps({
         type: Boolean,
         default: true
     },
-    functionId: {
-        type: Number,
-        required: true
-    },
     functionName: {
         type: String,
         required: true
@@ -89,7 +85,7 @@ const analysisIds = computed(() => {
 function updateCard() {
     /* Fetch JSON describing the card */
     _nbPendingAjaxRequests.value++;
-    axios.get(`${props.apiUrl}/${props.functionId}?subjects=${subjectsToBase64(props.subjects)}`)
+    axios.get(`${props.apiUrl}/${props.functionName}?subjects=${subjectsToBase64(props.subjects)}`)
         .then(response => {
             _analyses.value = response.data.analyses;
             /** replace null in value with NaN
@@ -125,7 +121,7 @@ function updateCard() {
                   :detailUrl="detailUrl"
                   :dois="_dois"
                   :enlarged="enlarged"
-                  :functionId="functionId"
+                  :functionName="functionName"
                   :messages="_messages"
                   :showLoadingSpinner="_nbPendingAjaxRequests > 0"
                   :subjects="subjects"
