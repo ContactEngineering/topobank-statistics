@@ -1,5 +1,9 @@
 # Changelog for plugin *topobank-statistics*
 
+## 1.6.1 (2025-03-17)
+
+- MAINT: Moved all frontend code to ce-ui
+
 ## 1.6.0 (2025-03-16)
 
 - MAINT: Updates for API changes in topobank 1.57.1
