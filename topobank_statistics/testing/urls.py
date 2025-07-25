@@ -2,8 +2,6 @@
 Making urls from topobank available for tests.
 """
 
-from django.conf import settings
-from django.conf.urls.static import static
 from django.urls import include, path
 
 urlpatterns = [
@@ -24,5 +22,3 @@ urlpatterns = [
         include("topobank.analysis.urls", namespace="analysis"),
     ),
 ]
-
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
