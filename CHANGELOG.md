@@ -1,5 +1,9 @@
 # Changelog for plugin *topobank-statistics*
 
+## 1.6.2 (2025-08-19)
+
+- MAINT: Removed unused media root
+
 ## 1.6.1 (2025-03-17)
 
 - MAINT: Moved all frontend code to ce-ui
