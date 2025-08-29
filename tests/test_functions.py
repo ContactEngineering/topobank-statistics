@@ -5,7 +5,7 @@ import pint
 import pytest
 from numpy.testing import assert_allclose
 from SurfaceTopography import NonuniformLineScan, Topography
-from topobank.analysis.models import AnalysisFunction
+from topobank.analysis.models import Workflow
 from topobank.testing.utils import AnalysisResultMock, FakeTopographyModel
 
 from topobank_statistics.workflows import (Autocorrelation,
@@ -891,7 +891,7 @@ def test_sync_analysis_functions():  # TODO move to main project
     call_command("register_analysis_functions")
 
     available_funcs_names = list(
-        x[0] for x in AnalysisFunction.objects.values_list("name")
+        x[0] for x in Workflow.objects.values_list("name")
     )
 
     expected_funcs_names = sorted(
@@ -917,4 +917,4 @@ def test_sync_analysis_functions():  # TODO move to main project
     # Call should be idempotent
     #
     call_command("register_analysis_functions")
-    assert len(available_funcs_names) == AnalysisFunction.objects.count()
+    assert len(available_funcs_names) == Workflow.objects.count()

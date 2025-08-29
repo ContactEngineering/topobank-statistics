@@ -1,6 +1,6 @@
 import pytest
 
-from topobank.analysis.models import AnalysisFunction
+from topobank.analysis.models import Workflow
 
 
 @pytest.mark.django_db
@@ -10,7 +10,7 @@ def test_autoload_analysis_functions():
     call_command('register_analysis_functions')
 
     # remember number of functions
-    num_funcs = AnalysisFunction.objects.count()
+    num_funcs = Workflow.objects.count()
 
     expected_funcs_names = sorted([
         'Height distribution',
@@ -25,7 +25,7 @@ def test_autoload_analysis_functions():
 
     assert len(expected_funcs_names) <= num_funcs
 
-    available_funcs_names = AnalysisFunction.objects.values("name")
+    available_funcs_names = Workflow.objects.values("name")
 
     for efn in expected_funcs_names:
         assert efn in available_funcs_names
@@ -34,4 +34,4 @@ def test_autoload_analysis_functions():
     # Call should be idempotent
     #
     call_command('register_analysis_functions')
-    assert num_funcs == AnalysisFunction.objects.count()
+    assert num_funcs == Workflow.objects.count()
