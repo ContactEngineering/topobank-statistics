@@ -30,7 +30,7 @@ def roughness_parameters_data_frame(analyses):
         row = {
             "Digital surface twin": topography.surface.name,
             "Measurement": topography.name,
-            "Creator": topography.creator,
+            "Creator": topography.created_by,
             "Instrument name": topography.instrument_name,
             "Instrument type": topography.instrument_type,
             "Instrument parameters": topography.instrument_parameters,
