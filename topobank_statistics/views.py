@@ -1,19 +1,22 @@
 import math
 
+from drf_spectacular.utils import OpenApiTypes, extend_schema
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-
+from topobank.analysis.v1.controller import AnalysisController
+from topobank.usage_stats.utils import increase_statistics_by_date_and_object
 from trackstats.models import Metric
 
-from topobank.usage_stats.utils import increase_statistics_by_date_and_object
-from topobank.analysis.v1.controller import AnalysisController
-
 from .utils import round_to_significant_digits
-
 
 NUM_SIGNIFICANT_DIGITS_RMS_VALUES = 5
 
 
+@extend_schema(
+    description="Get roughness parameters card view data",
+    request=None,
+    responses=OpenApiTypes.OBJECT,
+)
 @api_view(['GET'])
 def roughness_parameters_card_view(request, **kwargs):
     def _convert_value(v):
