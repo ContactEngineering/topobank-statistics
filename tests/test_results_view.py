@@ -143,7 +143,7 @@ def test_roughness_params_rounded(
     )
     m.return_value = myfunc
 
-    surf = SurfaceFactory(creator=user_with_plugin)
+    surf = SurfaceFactory(created_by=user_with_plugin)
     topo = Topography2DFactory(size_x=1, size_y=1, surface=surf)
 
     func = Workflow.objects.get(name="topobank_statistics.roughness_parameters")
@@ -154,7 +154,7 @@ def test_roughness_params_rounded(
         {"workflow": func.name, "subjects": subjects_to_base64([topo])},
     )
     assert m.call_count == 1
-    request.user = topo.surface.creator
+    request.user = topo.surface.created_by
     request.session = {}
 
     response = roughness_parameters_card_view(request)
