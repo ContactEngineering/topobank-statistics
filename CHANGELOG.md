@@ -1,5 +1,9 @@
 # Changelog for plugin *topobank-statistics*
 
+## 1.7.0 (2025-12-11)
+
+- MAINT: Update for topobank 1.65.0
+
 ## 1.6.2 (2025-08-19)
 
 - MAINT: Removed unused media root
