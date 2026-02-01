@@ -4,8 +4,6 @@ from drf_spectacular.utils import OpenApiTypes, extend_schema
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from topobank.analysis.v1.controller import AnalysisController
-from topobank.usage_stats.utils import increase_statistics_by_date_and_object
-from trackstats.models import Metric
 
 from .utils import round_to_significant_digits
 
@@ -33,11 +31,6 @@ def roughness_parameters_card_view(request, **kwargs):
         return v
 
     controller = AnalysisController.from_request(request, **kwargs)
-
-    #
-    # for statistics, count views per function
-    #
-    increase_statistics_by_date_and_object(Metric.objects.ANALYSES_RESULTS_VIEW_COUNT, obj=controller.workflow)
 
     #
     # Trigger missing analyses
