@@ -3,19 +3,15 @@ from typing import Union
 import numpy as np
 from SurfaceTopography.Container.Averaging import log_average
 from SurfaceTopography.Container.common import suggest_length_unit
-from SurfaceTopography.Container.ScaleDependentStatistics import (
-    scale_dependent_statistical_property,
-)
-from SurfaceTopography.Exceptions import CannotPerformAnalysisError, ReentrantDataError
-from topobank.analysis.workflows import (
-    WorkflowImplementation,
-    ContainerProxy,
-    make_alert_entry,
-    reasonable_bins_argument,
-    wrap_series,
-    VIZ_SERIES,
-)
+from SurfaceTopography.Container.ScaleDependentStatistics import \
+    scale_dependent_statistical_property
+from SurfaceTopography.Exceptions import (CannotPerformAnalysisError,
+                                          ReentrantDataError)
 from topobank.analysis.registry import register_implementation
+from topobank.analysis.workflows import (ContainerProxy,
+                                         WorkflowImplementation,
+                                         make_alert_entry,
+                                         reasonable_bins_argument, wrap_series)
 from topobank.files.models import Folder
 from topobank.manager.models import Surface, Topography
 
@@ -29,7 +25,6 @@ class HeightDistribution(WorkflowImplementation):
     class Meta:
         name = "topobank_statistics.height_distribution"
         display_name = "Height distribution"
-        visualization_type = VIZ_SERIES
 
         implementations = {
             Topography: "topography_implementation",
@@ -205,7 +200,6 @@ class SlopeDistribution(WorkflowImplementation):
     class Meta:
         name = "topobank_statistics.slope_distribution"
         display_name = "Slope distribution"
-        visualization_type = VIZ_SERIES
 
         implementations = {
             Topography: "topography_implementation",
@@ -309,7 +303,6 @@ class CurvatureDistribution(WorkflowImplementation):
     class Meta:
         name = "topobank_statistics.curvature_distribution"
         display_name = "Curvature distribution"
-        visualization_type = VIZ_SERIES
 
         implementations = {
             Topography: "topography_implementation",
@@ -407,7 +400,6 @@ class PowerSpectralDensity(WorkflowImplementation):
     class Meta:
         name = "topobank_statistics.power_spectral_density"
         display_name = "Power spectrum"
-        visualization_type = VIZ_SERIES
 
         implementations = {
             Topography: "topography_implementation",
@@ -464,7 +456,6 @@ class Autocorrelation(WorkflowImplementation):
     class Meta:
         name = "topobank_statistics.autocorrelation"
         display_name = "Autocorrelation"
-        visualization_type = VIZ_SERIES
 
         implementations = {
             Topography: "topography_implementation",
@@ -511,7 +502,6 @@ class VariableBandwidth(WorkflowImplementation):
     class Meta:
         name = "topobank_statistics.variable_bandwidth"
         display_name = "Variable bandwidth"
-        visualization_type = VIZ_SERIES
 
         implementations = {
             Topography: "topography_implementation",
@@ -748,7 +738,6 @@ class ScaleDependentSlope(WorkflowImplementation):
     class Meta:
         name = "topobank_statistics.scale_dependent_slope"
         display_name = "Scale-dependent slope"
-        visualization_type = VIZ_SERIES
 
         implementations = {
             Topography: "topography_implementation",
@@ -792,7 +781,6 @@ class ScaleDependentCurvature(WorkflowImplementation):
     class Meta:
         name = "topobank_statistics.scale_dependent_curvature"
         display_name = "Scale-dependent curvature"
-        visualization_type = VIZ_SERIES
 
         implementations = {
             Topography: "topography_implementation",
@@ -836,7 +824,6 @@ class RoughnessParameters(WorkflowImplementation):
     class Meta:
         name = "topobank_statistics.roughness_parameters"
         display_name = "Roughness parameters"
-        visualization_type = VIZ_ROUGHNESS_PARAMETERS
 
         implementations = {
             Topography: "topography_implementation",
