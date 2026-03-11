@@ -39,6 +39,3 @@ dependencies = [
 [project.urls]
 homepage = 'https://contact.engineering'
 repository = 'https://github.com/ContactEngineering/topobank-statistics'
-
-[project.entry-points.'topobank.plugins']
-topobank_statistics = 'topobank_statistics.apps.StatisticsPluginConfig'
