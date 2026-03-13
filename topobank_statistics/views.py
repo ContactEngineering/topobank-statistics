@@ -3,7 +3,7 @@ import math
 from drf_spectacular.utils import OpenApiTypes, extend_schema
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from topobank.analysis.v1.controller import AnalysisController
+from topobank_rest_api.analysis.v1.controller import AnalysisController
 
 from .utils import round_to_significant_digits
 
