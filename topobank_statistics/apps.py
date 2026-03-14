@@ -1,7 +1,5 @@
 from django.apps import AppConfig
 
-from .version import __version__
-
 
 class StatisticsAppConfig(AppConfig):
     default = True
