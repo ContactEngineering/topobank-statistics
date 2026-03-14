@@ -27,7 +27,7 @@ jobs:
 
     env:
       USE_DOCKER: no
-      DJANGO_SETTINGS_MODULE: topobank.test_settings
+      DJANGO_SETTINGS_MODULE: test_settings
       DATABASE_URL: postgres://postgres:secret@localhost/topobank-test
 
     strategy:
