@@ -91,7 +91,8 @@ def test_roughness_params_rounded(
     # we want rounding to 5 digits
     assert NUM_SIGNIFICANT_DIGITS_RMS_VALUES == 5
 
-    topo_url = topo.get_absolute_url()
+    from django.urls import reverse
+    topo_url = reverse("manager:topography-api-detail", kwargs={"pk": topo.pk})
 
     exp_table_data = [
         {

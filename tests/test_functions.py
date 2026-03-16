@@ -151,7 +151,7 @@ def test_curvature_distribution_simple_line_scan():
     exp_curv_dist_values = [0, 2, 0]
 
     # integral over dx= should be 1
-    assert np.trapz(exp_curv_dist_values, exp_bins) == pytest.approx(1)
+    assert np.trapezoid(exp_curv_dist_values, exp_bins) == pytest.approx(1)
 
     series0 = result["series"][0]
     np.testing.assert_almost_equal(series0["x"], exp_bins)
@@ -652,32 +652,8 @@ def test_psd_for_surface(simple_surface):
             {
                 "name": "1D PSD along x",
                 # This is a pure regression test
-                "x": [
-                    6.283185e-03,
-                    1.503970e-02,
-                    3.281944e-02,
-                    6.922845e-02,
-                    1.589340e-01,
-                    3.147830e-01,
-                    7.102774e-01,
-                    1.576467e00,
-                    3.436698e00,
-                    7.409395e00,
-                    1.380985e01,
-                ],
-                "y": [
-                    8.380153e05,
-                    1.444988e05,
-                    9.826013e04,
-                    3.596532e05,
-                    5.352438e06,
-                    1.219130e06,
-                    2.709713e-08,
-                    1.241935e00,
-                    4.943693e-09,
-                    4.544197e-13,
-                    1.752703e-05,
-                ],
+                "x": [6.283185307179587e-03, 1.5707963267948967e-02, 3.4557519189487726e-02, 6.922845327621696e-02, 1.5893396624938833e-01, 3.1478304729380757e-01, 7.25174852962207e-01, 1.576467071656972e+00, 3.4366982162121977e+00, 7.409395236787768e+00, 1.3809851547715075e+01],
+                "y": [838015.3406268039, 144498.79271884682, 98260.12820811429, 359653.24610939797, 5352438.189761804, 1219129.5566005432, 2.7097132083523212e-08, 1.2419353631909764, 4.9436930271514766e-09, 4.544196876746475e-13, 1.7527033790948728e-05],
             }
         ],
         "alerts": [],
@@ -687,12 +663,16 @@ def test_psd_for_surface(simple_surface):
         assert expected_result[k] == result[k]
 
     assert expected_result["series"][0]["name"] == result["series"][0]["name"]
-    assert_allclose(
-        expected_result["series"][0]["x"], result["series"][0]["x"], rtol=1e-6
-    )
-    assert_allclose(
-        expected_result["series"][0]["y"], result["series"][0]["y"], rtol=1e-6
-    )
+
+    x_actual = result["series"][0]["x"]
+    if hasattr(x_actual, "compressed"):
+        x_actual = x_actual.compressed()
+    y_actual = result["series"][0]["y"]
+    if hasattr(y_actual, "compressed"):
+        y_actual = y_actual.compressed()
+    assert_allclose(expected_result["series"][0]["x"], x_actual, rtol=1e-6)
+    assert_allclose(expected_result["series"][0]["y"], y_actual, rtol=1e-6)
+
 
 
 def test_autocorrelation_for_surface(simple_surface):
@@ -714,32 +694,8 @@ def test_autocorrelation_for_surface(simple_surface):
             {
                 "name": "Along x",
                 # This is a pure regression test
-                "x": [
-                    3.237410e-01,
-                    7.194245e-01,
-                    1.492413,
-                    3.247700,
-                    8.111829,
-                    1.683517e01,
-                    3.496530e01,
-                    7.431925e01,
-                    1.592920e02,
-                    3.451327e02,
-                    7.345133e02,
-                ],
-                "y": [
-                    6.372497e-02,
-                    2.788402e-01,
-                    7.872059e-01,
-                    3.479716e-01,
-                    2.909510e05,
-                    4.353897e05,
-                    2.104788e05,
-                    2.454415e05,
-                    5.123730e05,
-                    4.951154e05,
-                    5.092170e05,
-                ],
+                "x": [0.3237410071942446, 0.7194244604316545, 1.5467625899280575, 3.3812949640287773, 8.111829120774177, 16.83516903291526, 34.96530209460751, 74.31925256255172, 159.29203539823007, 345.1327433628318, 734.5132743362828],
+                "y": [0.06372497103078043, 0.2788402087127605, 0.7872058695142732, 0.34797157703429615, 290951.039776299, 435389.7435909383, 210478.7983977633, 245441.54725780623, 512372.9542604271, 495115.37637314457, 509217.02989580587],
             }
         ],
     }
@@ -748,12 +704,16 @@ def test_autocorrelation_for_surface(simple_surface):
         assert expected_result[k] == result[k]
 
     assert expected_result["series"][0]["name"] == result["series"][0]["name"]
-    assert_allclose(
-        expected_result["series"][0]["x"], result["series"][0]["x"], rtol=1e-6
-    )
-    assert_allclose(
-        expected_result["series"][0]["y"], result["series"][0]["y"], rtol=1e-6
-    )
+
+    x_actual = result["series"][0]["x"]
+    if hasattr(x_actual, "compressed"):
+        x_actual = x_actual.compressed()
+    y_actual = result["series"][0]["y"]
+    if hasattr(y_actual, "compressed"):
+        y_actual = y_actual.compressed()
+    assert_allclose(expected_result["series"][0]["x"], x_actual, rtol=1e-6)
+    assert_allclose(expected_result["series"][0]["y"], y_actual, rtol=1e-6)
+
 
 
 def test_variable_bandwidth_for_surface(simple_surface):
@@ -775,38 +735,8 @@ def test_variable_bandwidth_for_surface(simple_surface):
             {
                 "name": "Profile decomposition along x",
                 # This is a pure regression test
-                "x": [
-                    3.892199e-01,
-                    7.784397e-01,
-                    1.556879e00,
-                    3.113759e00,
-                    6.227518e00,
-                    1.171622e01,
-                    2.348236e01,
-                    4.706498e01,
-                    5.991179e01,
-                    9.433142e01,
-                    1.250000e02,
-                    2.500000e02,
-                    5.000000e02,
-                    1.000000e03,
-                ],
-                "y": [
-                    9.832030e-03,
-                    3.501679e-02,
-                    1.304232e-01,
-                    4.237846e-01,
-                    6.662862e-01,
-                    6.774048e-01,
-                    6.856179e-01,
-                    6.874945e-01,
-                    6.678760e02,
-                    6.875201e-01,
-                    7.008752e02,
-                    7.070114e02,
-                    7.081023e02,
-                    7.085611e02,
-                ],
+                "x": [0.3892198741007194, 0.7784397482014388, 1.5568794964028776, 3.113758992805755, 6.22751798561151, 12.45503597122302, 24.91007194244604, 49.82014388489208, 62.49999999999999, 99.64028776978417, 124.99999999999999, 249.99999999999997, 499.99999999999994, 999.9999999999999],
+                "y": [0.009832029644888381, 0.035016794484155955, 0.13042322540284756, 0.42378460356233527, 0.666286155705325, 0.6774047803405723, 0.685617939747381, 0.6874945277997337, 667.8760074868184, 0.6875201018679227, 700.8751619543367, 707.0114455170898, 708.1022933766853, 708.5611266275412],
             }
         ],
     }
@@ -815,12 +745,16 @@ def test_variable_bandwidth_for_surface(simple_surface):
         assert expected_result[k] == result[k]
 
     assert expected_result["series"][0]["name"] == result["series"][0]["name"]
-    assert_allclose(
-        expected_result["series"][0]["x"], result["series"][0]["x"], rtol=1e-6
-    )
-    assert_allclose(
-        expected_result["series"][0]["y"], result["series"][0]["y"], rtol=1e-6
-    )
+
+    x_actual = result["series"][0]["x"]
+    if hasattr(x_actual, "compressed"):
+        x_actual = x_actual.compressed()
+    y_actual = result["series"][0]["y"]
+    if hasattr(y_actual, "compressed"):
+        y_actual = y_actual.compressed()
+    assert_allclose(expected_result["series"][0]["x"], x_actual, rtol=1e-6)
+    assert_allclose(expected_result["series"][0]["y"], y_actual, rtol=1e-6)
+
 
 
 def test_scale_dependent_slope_for_surface(simple_surface):

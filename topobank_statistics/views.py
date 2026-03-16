@@ -1,5 +1,7 @@
 import math
 
+from django.urls import reverse
+
 from drf_spectacular.utils import OpenApiTypes, extend_schema
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -64,7 +66,7 @@ def roughness_parameters_card_view(request, **kwargs):
             # put topography in every line
             topo = analysis.subject
             d.update(dict(topography_name=topo.name,
-                          topography_url=topo.get_absolute_url()))
+                          topography_url=reverse("manager:topography-api-detail", kwargs={"pk": topo.pk})))
 
         data.extend(analysis_result)
 
