@@ -1,7 +1,4 @@
-import tempfile
-
 import numpy as np
-import openpyxl
 import pytest
 from topobank.analysis.models import Workflow
 from topobank.manager.utils import subjects_to_base64
