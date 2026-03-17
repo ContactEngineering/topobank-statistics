@@ -1,5 +1,6 @@
 import math
 
+from django.db import transaction
 from drf_spectacular.utils import OpenApiTypes, extend_schema
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -16,6 +17,7 @@ NUM_SIGNIFICANT_DIGITS_RMS_VALUES = 5
     responses=OpenApiTypes.OBJECT,
 )
 @api_view(['GET'])
+@transaction.non_atomic_requests
 def roughness_parameters_card_view(request, **kwargs):
     def _convert_value(v):
         if v is not None:
@@ -31,11 +33,6 @@ def roughness_parameters_card_view(request, **kwargs):
         return v
 
     controller = AnalysisController.from_request(request, **kwargs)
-
-    #
-    # Trigger missing analyses
-    #
-    controller.trigger_missing_analyses()
 
     #
     # Filter only successful ones
