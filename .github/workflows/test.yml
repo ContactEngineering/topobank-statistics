@@ -48,11 +48,7 @@ jobs:
     - name: Install
       run: |
         pip install --upgrade pip
-        pushd /tmp
-        git clone -b 26_split_topobank https://github.com/ContactEngineering/topobank.git
-        git clone https://github.com/ContactEngineering/topobank-rest-api.git
-        popd
-        pip install /tmp/topobank /tmp/topobank-rest-api git+https://github.com/ContactEngineering/topobank-orcid.git -e .[dev]
+        pip install git+https://github.com/ContactEngineering/topobank.git git+https://github.com/ContactEngineering/topobank-rest-api.git git+https://github.com/ContactEngineering/topobank-orcid.git -e .[dev]
 
     - name: Test
       run: PYTHONPATH=/tmp/topobank pytest -v
