@@ -34,7 +34,7 @@ INSTALLED_APPS = [
     "topobank.properties.apps.PropertiesAppConfig",
     "topobank.taskapp.celeryapp.CeleryAppConfig",
     "topobank_rest_api.apps.TopobankRestApiConfig",
-    "topobank_statistics.apps.TopobankStatisticsConfig",
+    "topobank_statistics.apps.TopobankStatisticsAppConfig",
 ]
 
 DATABASES = {
