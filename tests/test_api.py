@@ -1,6 +1,8 @@
+import pytest
 from django.urls import reverse
 
 
+@pytest.mark.urls("test_urls")
 def test_api():
     """Test API routes"""
     assert (

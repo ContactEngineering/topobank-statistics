@@ -1,7 +1,7 @@
 from django.apps import AppConfig
 
 
-class StatisticsAppConfig(AppConfig):
+class TopobankStatisticsAppConfig(AppConfig):
     default = True
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'topobank_statistics'
