@@ -1,11 +1,12 @@
 import pytest
-
 from topobank.analysis.models import Workflow
 
 
 @pytest.mark.django_db
 def test_autoload_analysis_functions():
     from django.core.management import call_command
+
+    import topobank_statistics.workflows  # noqa: F401
 
     call_command('register_analysis_functions')
 
@@ -25,7 +26,7 @@ def test_autoload_analysis_functions():
 
     assert len(expected_funcs_names) <= num_funcs
 
-    available_funcs_names = Workflow.objects.values("name")
+    available_funcs_names = Workflow.objects.values_list("display_name", flat=True)
 
     for efn in expected_funcs_names:
         assert efn in available_funcs_names
