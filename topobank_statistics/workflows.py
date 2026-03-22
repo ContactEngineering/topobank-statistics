@@ -12,7 +12,7 @@ from topobank.analysis.workflows import (ContainerProxy,
                                          WorkflowImplementation,
                                          make_alert_entry,
                                          reasonable_bins_argument, wrap_series)
-from topobank.files.models import Folder
+from topobank.files.models import ManifestSet
 from topobank.manager.models import Surface, Topography
 
 APP_NAME = "topobank_statistics"
@@ -35,7 +35,7 @@ class HeightDistribution(WorkflowImplementation):
         wfac: int = 5
 
     def topography_implementation(
-        self, analysis, folder: Folder = None, progress_recorder=None
+        self, analysis, folder: ManifestSet = None, progress_recorder=None
     ):
         # Get low level topography from SurfaceTopography model
         topography = analysis.subject.topography()
