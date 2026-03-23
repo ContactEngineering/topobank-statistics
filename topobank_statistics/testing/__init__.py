@@ -29,7 +29,7 @@ Example
 from pathlib import Path
 from typing import Any, Union
 
-from muflows import LocalFolderContext
+from muflow import LocalFolderContext
 
 
 class LocalTopobankContext(LocalFolderContext):

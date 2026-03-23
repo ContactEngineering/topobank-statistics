@@ -154,7 +154,7 @@ class TestWorkflowWithContext:
 
     def test_workflow_accesses_subject(self, tmp_path):
         """Test that a workflow can access the subject through context."""
-        from muflows import WorkflowImplementation
+        from muflow import WorkflowImplementation
 
         class TestWorkflow(WorkflowImplementation):
             class Meta:

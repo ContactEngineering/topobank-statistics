@@ -1,7 +1,7 @@
 from typing import Union
 
 import numpy as np
-from muflows import WorkflowImplementation
+from muflow import WorkflowImplementation
 from SurfaceTopography.Container.Averaging import log_average
 from SurfaceTopography.Container.common import suggest_length_unit
 from SurfaceTopography.Container.ScaleDependentStatistics import \
