@@ -1,16 +1,16 @@
 from typing import Union
 
 import numpy as np
+from muflows import WorkflowImplementation
 from SurfaceTopography.Container.Averaging import log_average
 from SurfaceTopography.Container.common import suggest_length_unit
 from SurfaceTopography.Container.ScaleDependentStatistics import \
     scale_dependent_statistical_property
 from SurfaceTopography.Exceptions import (CannotPerformAnalysisError,
                                           ReentrantDataError)
+from topobank.analysis.context import TopobankWorkflowContext
 from topobank.analysis.registry import register_implementation
-from topobank.analysis.workflows import (ContainerProxy,
-                                         WorkflowImplementation,
-                                         make_alert_entry,
+from topobank.analysis.workflows import (ContainerProxy, make_alert_entry,
                                          reasonable_bins_argument, wrap_series)
 from topobank.files.models import ManifestSet
 from topobank.manager.models import Surface, Topography
@@ -34,13 +34,25 @@ class HeightDistribution(WorkflowImplementation):
         bins: Union[int, None] = None
         wfac: int = 5
 
-    def topography_implementation(
-        self, analysis, folder: ManifestSet = None, progress_recorder=None
-    ):
-        # Get low level topography from SurfaceTopography model
-        topography = analysis.subject.topography()
+    def execute(self, context: TopobankWorkflowContext) -> dict:
+        """Execute height distribution analysis.
 
-        # Get parameters
+        This is the context-based interface. The subject is already
+        resolved to a SurfaceTopography object.
+
+        Parameters
+        ----------
+        context : TopobankWorkflowContext
+            Workflow context with subject, kwargs, and file I/O.
+
+        Returns
+        -------
+        dict
+            Result containing scalars, series, and metadata.
+        """
+        topography = context.subject
+
+        # Use workflow instance kwargs (from constructor/Parameters)
         bins = self.kwargs.bins
         wfac = self.kwargs.wfac
         if bins is None:
@@ -96,6 +108,20 @@ class HeightDistribution(WorkflowImplementation):
             yunit="" if unit is None else "{}⁻¹".format(unit),
             series=wrap_series(series),
         )
+
+    def topography_implementation(
+        self, analysis, folder: ManifestSet = None, progress_recorder=None
+    ):
+        """Legacy implementation for backward compatibility.
+
+        Delegates to execute() using DjangoWorkflowContext.
+        """
+        from topobank.analysis.context import DjangoWorkflowContext
+
+        context = DjangoWorkflowContext(
+            analysis, progress_recorder=progress_recorder
+        )
+        return self.execute(context)
 
 
 def _reasonable_histogram_range(arr):
