@@ -1,24 +1,35 @@
 """
 Statistical analysis workflows for TopoBank.
 
-This module contains workflow implementations for various statistical
-analyses of surface topography data. Each workflow is in its own file
-and registers itself with the topobank workflow registry on import.
+Ported to sds-workflows package.
 """
+
+from sds_workflows.workflows import (Autocorrelation,
+                                     CurvatureDistribution,
+                                     HeightDistribution,
+                                     PowerSpectralDensity,
+                                     RoughnessParameters,
+                                     ScaleDependentCurvature,
+                                     ScaleDependentSlope,
+                                     SlopeDistribution,
+                                     VariableBandwidth)
+
+# Also import topobank-specific registry to trigger registration back into topobank
+from topobank.analysis.registry import register_implementation
+
+register_implementation(Autocorrelation)
+register_implementation(CurvatureDistribution)
+register_implementation(HeightDistribution)
+register_implementation(PowerSpectralDensity)
+register_implementation(RoughnessParameters)
+register_implementation(ScaleDependentCurvature)
+register_implementation(ScaleDependentSlope)
+register_implementation(SlopeDistribution)
+register_implementation(VariableBandwidth)
 
 # Re-export utility constants for backward compatibility
 from ._utils import (APP_NAME, GAUSSIAN_FIT_SERIES_NAME,
                      VIZ_ROUGHNESS_PARAMETERS)
-# Import all workflows to trigger registration
-from .autocorrelation import Autocorrelation
-from .curvature_distribution import CurvatureDistribution
-from .height_distribution import HeightDistribution
-from .power_spectral_density import PowerSpectralDensity
-from .roughness_parameters import RoughnessParameters
-from .scale_dependent_curvature import ScaleDependentCurvature
-from .scale_dependent_slope import ScaleDependentSlope
-from .slope_distribution import SlopeDistribution
-from .variable_bandwidth import VariableBandwidth
 
 __all__ = [
     # Workflows

@@ -13,11 +13,11 @@ Example
 >>> heights = np.random.randn(100, 100)
 >>> topo = Topography(heights, (1.0, 1.0), unit="nm")
 >>>
->>> # Create context with pre-resolved subject
+>>> # Create context with pre-resolved topography
 >>> ctx = LocalTopobankContext(
 ...     path="/tmp/test-output",
 ...     kwargs={"bins": 50},
-...     subject=topo,
+...     topography=topo,
 ... )
 >>>
 >>> # Execute workflow
@@ -33,9 +33,10 @@ from muflow import LocalFolderContext
 
 
 class LocalTopobankContext(LocalFolderContext):
-    """Local filesystem context with subject support.
+    """Local filesystem context with topography support.
 
-    Extends LocalFolderContext to implement TopobankWorkflowContext protocol.
+    Extends LocalFolderContext with topography, topography_name, and
+    topography_url properties expected by sds-workflows.
     Use this for testing workflows without Django.
 
     Parameters
@@ -44,12 +45,13 @@ class LocalTopobankContext(LocalFolderContext):
         Local directory path for storing files.
     kwargs : dict
         Workflow parameters.
-    subject : Any
-        The resolved subject data (e.g., SurfaceTopography object).
-    subject_name : str, optional
-        Display name of the subject. Default is "test-subject".
-    subject_url : str, optional
-        URL of the subject. Default is empty string.
+    topography : Any
+        The resolved topography data (SurfaceTopography object or surface
+        container).
+    topography_name : str, optional
+        Display name of the topography. Default is "test-topography".
+    topography_url : str, optional
+        URL of the topography. Default is empty string.
     dependency_paths : dict[str, str], optional
         Mapping from dependency key to local path.
     """
@@ -58,27 +60,27 @@ class LocalTopobankContext(LocalFolderContext):
         self,
         path: Union[str, Path],
         kwargs: dict,
-        subject: Any,
-        subject_name: str = "test-subject",
-        subject_url: str = "",
+        topography: Any,
+        topography_name: str = "test-topography",
+        topography_url: str = "",
         dependency_paths: dict[str, str] = None,
     ):
         super().__init__(path, kwargs, dependency_paths)
-        self._subject = subject
-        self._subject_name = subject_name
-        self._subject_url = subject_url
+        self._topography = topography
+        self._topography_name = topography_name
+        self._topography_url = topography_url
 
     @property
-    def subject(self) -> Any:
-        """The resolved subject data."""
-        return self._subject
+    def topography(self) -> Any:
+        """The resolved topography data."""
+        return self._topography
 
     @property
-    def subject_name(self) -> str:
-        """Display name of the subject."""
-        return self._subject_name
+    def topography_name(self) -> str:
+        """Display name of the topography."""
+        return self._topography_name
 
     @property
-    def subject_url(self) -> str:
-        """URL of the subject."""
-        return self._subject_url
+    def topography_url(self) -> str:
+        """URL of the topography."""
+        return self._topography_url

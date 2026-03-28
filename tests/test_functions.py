@@ -1,4 +1,5 @@
 import math
+import tempfile
 
 import numpy as np
 import pint
@@ -6,7 +7,7 @@ import pytest
 from numpy.testing import assert_allclose
 from SurfaceTopography import NonuniformLineScan, Topography
 from topobank.analysis.models import Workflow
-from topobank.testing.utils import AnalysisResultMock, FakeTopographyModel
+from topobank_statistics.testing import LocalTopobankContext
 
 from topobank_statistics.workflows import (Autocorrelation,
                                            CurvatureDistribution,
@@ -35,6 +36,15 @@ EXPECTED_KEYS_FOR_PLOT_CARD_ANALYSIS = sorted(
 )
 
 
+def _make_context(topography, **kwargs):
+    """Create a LocalTopobankContext for a SurfaceTopography object."""
+    return LocalTopobankContext(
+        path=tempfile.mkdtemp(),
+        kwargs=kwargs,
+        topography=topography,
+    )
+
+
 ###############################################################################
 # Tests for line scans
 ###############################################################################
@@ -46,11 +56,7 @@ def test_height_distribution_simple_line_scan():
 
     t = NonuniformLineScan(x, y, unit="nm").detrend(detrend_mode="center")
 
-    topography = FakeTopographyModel(t)
-
-    result = HeightDistribution().topography_implementation(
-        AnalysisResultMock(topography)
-    )
+    result = HeightDistribution().execute(_make_context(t))
 
     assert sorted(result.keys()) == EXPECTED_KEYS_FOR_DIST_ANALYSIS
 
@@ -83,11 +89,7 @@ def test_slope_distribution_simple_line_scan():
 
     t = NonuniformLineScan(x, y).detrend(detrend_mode="center")
 
-    topography = FakeTopographyModel(t)
-
-    result = SlopeDistribution(bins=3).topography_implementation(
-        AnalysisResultMock(topography)
-    )
+    result = SlopeDistribution(bins=3).execute(_make_context(t))
 
     assert sorted(result.keys()) == EXPECTED_KEYS_FOR_DIST_ANALYSIS
 
@@ -122,14 +124,11 @@ def test_curvature_distribution_simple_line_scan():
     y = -2 * x**2  # constant curvature
 
     t = NonuniformLineScan(x, y, unit=unit).detrend(detrend_mode="center")
-    topography = FakeTopographyModel(t)
 
     bins = np.array(
         (-4.75, -4.25, -3.75, -3.25)
     )  # special for this test in order to know results
-    result = CurvatureDistribution(bins=bins).topography_implementation(
-        AnalysisResultMock(topography)
-    )
+    result = CurvatureDistribution(bins=bins).execute(_make_context(t))
 
     assert sorted(result.keys()) == EXPECTED_KEYS_FOR_DIST_ANALYSIS
 
@@ -167,11 +166,8 @@ def test_power_spectrum_simple_nonuniform_linescan():
     y = -2 * x**2  # constant curvature
 
     t = NonuniformLineScan(x, y, unit=unit).detrend(detrend_mode="center")
-    topography = FakeTopographyModel(t)
 
-    result = PowerSpectralDensity().topography_implementation(
-        AnalysisResultMock(topography)
-    )
+    result = PowerSpectralDensity().execute(_make_context(t))
 
     assert sorted(result.keys()) == EXPECTED_KEYS_FOR_PLOT_CARD_ANALYSIS
 
@@ -197,9 +193,8 @@ def test_autocorrelation_simple_nonuniform_topography():
     h = 2 * x
 
     t = NonuniformLineScan(x, h, unit="nm").detrend("center")
-    topography = FakeTopographyModel(t)
 
-    result = Autocorrelation().topography_implementation(AnalysisResultMock(topography))
+    result = Autocorrelation().execute(_make_context(t))
 
     assert sorted(result.keys()) == EXPECTED_KEYS_FOR_PLOT_CARD_ANALYSIS
 
@@ -213,11 +208,8 @@ def test_variable_bandwidth_simple_nonuniform_linescan():
     h = 2 * x
 
     t = NonuniformLineScan(x, h, unit="nm").detrend("center")
-    topography = FakeTopographyModel(t)
 
-    result = VariableBandwidth().topography_implementation(
-        AnalysisResultMock(topography)
-    )
+    result = VariableBandwidth().execute(_make_context(t))
 
     assert sorted(result.keys()) == EXPECTED_KEYS_FOR_PLOT_CARD_ANALYSIS
 
@@ -243,9 +235,8 @@ def simple_linear_2d_topography():
 
 def test_height_distribution_simple_2d_topography(simple_linear_2d_topography):
     exp_unit = simple_linear_2d_topography.unit
-    topography = FakeTopographyModel(simple_linear_2d_topography)
-    result = HeightDistribution(bins=10).topography_implementation(
-        AnalysisResultMock(topography)
+    result = HeightDistribution(bins=10).execute(
+        _make_context(simple_linear_2d_topography)
     )
 
     assert sorted(result.keys()) == EXPECTED_KEYS_FOR_DIST_ANALYSIS
@@ -284,9 +275,8 @@ def test_height_distribution_simple_2d_topography(simple_linear_2d_topography):
 
 def test_slope_distribution_simple_2d_topography(simple_linear_2d_topography):
     # resulting heights follow this function: h(x,y)=-4y+9
-    topography = FakeTopographyModel(simple_linear_2d_topography)
-    result = SlopeDistribution(bins=3).topography_implementation(
-        AnalysisResultMock(topography)
+    result = SlopeDistribution(bins=3).execute(
+        _make_context(simple_linear_2d_topography)
     )
 
     assert sorted(result.keys()) == EXPECTED_KEYS_FOR_DIST_ANALYSIS
@@ -336,9 +326,8 @@ def test_curvature_distribution_simple_2d_topography(simple_linear_2d_topography
     unit = simple_linear_2d_topography.unit
     # resulting heights follow this function: h(x,y)=-4y+9
 
-    topography = FakeTopographyModel(simple_linear_2d_topography)
-    result = CurvatureDistribution(bins=3).topography_implementation(
-        AnalysisResultMock(topography)
+    result = CurvatureDistribution(bins=3).execute(
+        _make_context(simple_linear_2d_topography)
     )
 
     assert sorted(result.keys()) == EXPECTED_KEYS_FOR_DIST_ANALYSIS
@@ -381,10 +370,7 @@ def test_curvature_distribution_simple_2d_topography_periodic():
     t = Topography(arr, (100, 100), periodic=True, unit=unit).detrend("center")
     # resulting heights follow this function: h(x,y)=-2y+9
 
-    topography = FakeTopographyModel(t)
-    result = CurvatureDistribution(bins=3).topography_implementation(
-        AnalysisResultMock(topography)
-    )
+    result = CurvatureDistribution(bins=3).execute(_make_context(t))
 
     assert sorted(result.keys()) == EXPECTED_KEYS_FOR_DIST_ANALYSIS
 
@@ -398,9 +384,8 @@ def test_power_spectrum_simple_2d_topography(simple_linear_2d_topography):
     unit = simple_linear_2d_topography.unit
     # resulting heights follow this function: h(x,y)=-2y+9
 
-    topography = FakeTopographyModel(simple_linear_2d_topography)
-    result = PowerSpectralDensity().topography_implementation(
-        AnalysisResultMock(topography)
+    result = PowerSpectralDensity().execute(
+        _make_context(simple_linear_2d_topography)
     )
 
     assert sorted(result.keys()) == EXPECTED_KEYS_FOR_PLOT_CARD_ANALYSIS
@@ -428,8 +413,9 @@ def test_power_spectrum_simple_2d_topography(simple_linear_2d_topography):
 
 def test_autocorrelation_simple_2d_topography(simple_linear_2d_topography):
     # resulting heights follow this function: h(x,y)=-2y+9
-    topography = FakeTopographyModel(simple_linear_2d_topography)
-    result = Autocorrelation().topography_implementation(AnalysisResultMock(topography))
+    result = Autocorrelation().execute(
+        _make_context(simple_linear_2d_topography)
+    )
 
     assert sorted(result.keys()) == EXPECTED_KEYS_FOR_PLOT_CARD_ANALYSIS
 
@@ -440,9 +426,8 @@ def test_autocorrelation_simple_2d_topography(simple_linear_2d_topography):
 
 def test_scale_dependent_slope_simple_2d_topography(simple_linear_2d_topography):
     # resulting heights follow this function: h(x,y)=-2y+9
-    topography = FakeTopographyModel(simple_linear_2d_topography)
-    result = ScaleDependentSlope().topography_implementation(
-        AnalysisResultMock(topography)
+    result = ScaleDependentSlope().execute(
+        _make_context(simple_linear_2d_topography)
     )
 
     assert sorted(result.keys()) == EXPECTED_KEYS_FOR_PLOT_CARD_ANALYSIS
@@ -454,9 +439,8 @@ def test_scale_dependent_slope_simple_2d_topography(simple_linear_2d_topography)
 
 
 def test_variable_bandwidth_simple_2d_topography(simple_linear_2d_topography):
-    topography = FakeTopographyModel(simple_linear_2d_topography)
-    result = VariableBandwidth().topography_implementation(
-        AnalysisResultMock(topography)
+    result = VariableBandwidth().execute(
+        _make_context(simple_linear_2d_topography)
     )
 
     assert sorted(result.keys()) == EXPECTED_KEYS_FOR_PLOT_CARD_ANALYSIS
@@ -468,9 +452,8 @@ def test_variable_bandwidth_simple_2d_topography(simple_linear_2d_topography):
 def test_roughness_parameters(simple_linear_2d_topography):
     unit = simple_linear_2d_topography.unit
     inverse_unit = "{}⁻¹".format(unit)
-    topography = FakeTopographyModel(simple_linear_2d_topography)
-    result = RoughnessParameters().topography_implementation(
-        AnalysisResultMock(topography)
+    result = RoughnessParameters().execute(
+        _make_context(simple_linear_2d_topography)
     )
 
     ureg = pint.UnitRegistry()
@@ -590,13 +573,6 @@ def test_roughness_parameters(simple_linear_2d_topography):
 
 @pytest.fixture
 def simple_surface():
-    class WrapTopography:
-        def __init__(self, t):
-            self._t = t
-
-        def topography(self):
-            return self._t
-
     class WrapRequest:
         def __init__(self, c):
             self._c = c
@@ -630,14 +606,23 @@ def simple_surface():
     x = np.arange(nx) * sx / nx
     topographies += [NonuniformLineScan(x, np.cos(x * np.pi / lx), unit="nm")]
 
-    return WrapSurface([WrapTopography(t) for t in topographies])
+    return WrapSurface(topographies)
+
+
+def _make_surface_context(surface):
+    """Create a LocalTopobankContext for a surface (container) subject."""
+    return LocalTopobankContext(
+        path=tempfile.mkdtemp(),
+        kwargs={},
+        topography=surface,
+    )
 
 
 def test_psd_for_surface(simple_surface):
     """Testing PSD for an artificial surface."""
 
-    result = PowerSpectralDensity(nb_points_per_decade=3).surface_implementation(
-        AnalysisResultMock(simple_surface)
+    result = PowerSpectralDensity(nb_points_per_decade=3).execute(
+        _make_surface_context(simple_surface)
     )
 
     expected_result = {
@@ -677,8 +662,8 @@ def test_psd_for_surface(simple_surface):
 def test_autocorrelation_for_surface(simple_surface):
     """Testing autocorrelation for an artificial surface."""
 
-    result = Autocorrelation(nb_points_per_decade=3).surface_implementation(
-        AnalysisResultMock(simple_surface)
+    result = Autocorrelation(nb_points_per_decade=3).execute(
+        _make_surface_context(simple_surface)
     )
 
     expected_result = {
@@ -717,8 +702,8 @@ def test_autocorrelation_for_surface(simple_surface):
 def test_variable_bandwidth_for_surface(simple_surface):
     """Testing variable bandwidth for an artificial surface."""
 
-    result = VariableBandwidth().surface_implementation(
-        AnalysisResultMock(simple_surface)
+    result = VariableBandwidth().execute(
+        _make_surface_context(simple_surface)
     )
 
     expected_result = {
@@ -757,8 +742,8 @@ def test_variable_bandwidth_for_surface(simple_surface):
 def test_scale_dependent_slope_for_surface(simple_surface):
     """Testing scale-dependent slope for an artificial surface."""
 
-    result = ScaleDependentSlope(nb_points_per_decade=3).surface_implementation(
-        AnalysisResultMock(simple_surface)
+    result = ScaleDependentSlope(nb_points_per_decade=3).execute(
+        _make_surface_context(simple_surface)
     )
 
     expected_result = {

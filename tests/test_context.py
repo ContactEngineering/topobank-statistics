@@ -34,75 +34,75 @@ class TestLocalTopobankContext:
 
     def test_implements_protocol(self, tmp_path):
         """Test that LocalTopobankContext implements TopobankWorkflowContext."""
-        subject = MockTopography(np.random.randn(10, 10), (1.0, 1.0))
+        topo = MockTopography(np.random.randn(10, 10), (1.0, 1.0))
         context = LocalTopobankContext(
             path=tmp_path,
             kwargs={"param": "value"},
-            subject=subject,
+            topography=topo,
         )
 
         # Check it's recognized as implementing the protocol
         assert isinstance(context, TopobankWorkflowContext)
 
-    def test_subject_property(self, tmp_path):
-        """Test subject property returns the provided subject."""
-        subject = MockTopography(np.random.randn(10, 10), (1.0, 1.0))
+    def test_topography_property(self, tmp_path):
+        """Test topography property returns the provided topography."""
+        topo = MockTopography(np.random.randn(10, 10), (1.0, 1.0))
         context = LocalTopobankContext(
             path=tmp_path,
             kwargs={},
-            subject=subject,
+            topography=topo,
         )
 
-        assert context.subject is subject
+        assert context.topography is topo
 
-    def test_subject_name_default(self, tmp_path):
-        """Test default subject_name."""
+    def test_topography_name_default(self, tmp_path):
+        """Test default topography_name."""
         context = LocalTopobankContext(
             path=tmp_path,
             kwargs={},
-            subject=None,
+            topography=None,
         )
 
-        assert context.subject_name == "test-subject"
+        assert context.topography_name == "test-topography"
 
-    def test_subject_name_custom(self, tmp_path):
-        """Test custom subject_name."""
+    def test_topography_name_custom(self, tmp_path):
+        """Test custom topography_name."""
         context = LocalTopobankContext(
             path=tmp_path,
             kwargs={},
-            subject=None,
-            subject_name="My Topography",
+            topography=None,
+            topography_name="My Topography",
         )
 
-        assert context.subject_name == "My Topography"
+        assert context.topography_name == "My Topography"
 
-    def test_subject_url_default(self, tmp_path):
-        """Test default subject_url is empty."""
+    def test_topography_url_default(self, tmp_path):
+        """Test default topography_url is empty."""
         context = LocalTopobankContext(
             path=tmp_path,
             kwargs={},
-            subject=None,
+            topography=None,
         )
 
-        assert context.subject_url == ""
+        assert context.topography_url == ""
 
-    def test_subject_url_custom(self, tmp_path):
-        """Test custom subject_url."""
+    def test_topography_url_custom(self, tmp_path):
+        """Test custom topography_url."""
         context = LocalTopobankContext(
             path=tmp_path,
             kwargs={},
-            subject=None,
-            subject_url="/topographies/123/",
+            topography=None,
+            topography_url="/topographies/123/",
         )
 
-        assert context.subject_url == "/topographies/123/"
+        assert context.topography_url == "/topographies/123/"
 
     def test_inherits_file_io(self, tmp_path):
         """Test that file I/O methods from LocalFolderContext work."""
         context = LocalTopobankContext(
             path=tmp_path,
             kwargs={},
-            subject=None,
+            topography=None,
         )
 
         # Save and read JSON
@@ -115,7 +115,7 @@ class TestLocalTopobankContext:
         context = LocalTopobankContext(
             path=tmp_path,
             kwargs={"bins": 50, "wfac": 5},
-            subject=None,
+            topography=None,
         )
 
         assert context.kwargs == {"bins": 50, "wfac": 5}
@@ -125,7 +125,7 @@ class TestLocalTopobankContext:
         context = LocalTopobankContext(
             path=tmp_path,
             kwargs={},
-            subject=None,
+            topography=None,
         )
 
         assert context.storage_prefix == str(tmp_path)
@@ -140,7 +140,7 @@ class TestLocalTopobankContext:
         context = LocalTopobankContext(
             path=tmp_path / "main",
             kwargs={},
-            subject=None,
+            topography=None,
             dependency_paths={"my_dep": str(dep_path)},
         )
 
@@ -152,8 +152,8 @@ class TestLocalTopobankContext:
 class TestWorkflowWithContext:
     """Test using LocalTopobankContext with a workflow."""
 
-    def test_workflow_accesses_subject(self, tmp_path):
-        """Test that a workflow can access the subject through context."""
+    def test_workflow_accesses_topography(self, tmp_path):
+        """Test that a workflow can access the topography through context."""
         from muflow import WorkflowImplementation
 
         class TestWorkflow(WorkflowImplementation):
@@ -162,18 +162,18 @@ class TestWorkflowWithContext:
                 display_name = "Test"
 
             def execute(self, context):
-                topography = context.subject
+                topography = context.topography
                 rms = topography.rms_height_from_profile()
                 return {"rms_height": float(rms)}
 
         # Create mock topography
         heights = np.array([[1, 2], [3, 4]], dtype=float)
-        subject = MockTopography(heights, (1.0, 1.0), unit="nm")
+        topo = MockTopography(heights, (1.0, 1.0), unit="nm")
 
         context = LocalTopobankContext(
             path=tmp_path,
             kwargs={},
-            subject=subject,
+            topography=topo,
         )
 
         workflow = TestWorkflow()
@@ -195,8 +195,8 @@ class TestWorkflowWithContext:
         context = LocalTopobankContext(
             path=tmp_path,
             kwargs={"bins": 50, "wfac": 5},
-            subject=topography,
-            subject_name="Test Topography",
+            topography=topography,
+            topography_name="Test Topography",
         )
 
         workflow = HeightDistribution()
