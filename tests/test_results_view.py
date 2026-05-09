@@ -71,8 +71,8 @@ def test_roughness_params_rounded(
     surf = SurfaceFactory(created_by=user_with_plugin)
     topo = Topography2DFactory(size_x=1, size_y=1, surface=surf)
 
-    func = Workflow.objects.get(name="topobank_statistics.roughness_parameters")
-    TopographyAnalysisFactory(subject_topography=topo, function=func)
+    func = Workflow(name="topobank_statistics.roughness_parameters")
+    TopographyAnalysisFactory(subject_topography=topo, workflow_name=func.name)
 
     request = api_rf.get(
         f"/plugins/statistics/card/roughness-parameters/{func.name}",

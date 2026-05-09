@@ -413,7 +413,7 @@ class PowerSpectralDensity(WorkflowImplementation):
     def topography_implementation(self, analysis, progress_recorder=None):
         """Calculate Power Spectrum for given topography."""
         # Get low level topography from SurfaceTopography model
-        return _analysis_function(
+        return _workflow(
             analysis.subject,
             "power_spectrum_from_profile",
             "power_spectrum_from_area",
@@ -436,7 +436,7 @@ class PowerSpectralDensity(WorkflowImplementation):
         """Calculate Power Spectrum for given topography."""
         # Get low level topography from SurfaceTopography model
 
-        return _analysis_function_for_surface(
+        return _workflow_for_surface(
             analysis.subject,
             progress_recorder,
             "power_spectrum_from_profile",
@@ -466,7 +466,7 @@ class Autocorrelation(WorkflowImplementation):
         nb_points_per_decade: int = 10
 
     def topography_implementation(self, analysis, progress_recorder=None):
-        return _analysis_function(
+        return _workflow(
             analysis.subject,
             "autocorrelation_from_profile",
             "autocorrelation_from_area",
@@ -483,7 +483,7 @@ class Autocorrelation(WorkflowImplementation):
         )
 
     def surface_implementation(self, analysis, progress_recorder=None):
-        return _analysis_function_for_surface(
+        return _workflow_for_surface(
             analysis.subject,
             progress_recorder,
             "autocorrelation_from_profile",
@@ -509,7 +509,7 @@ class VariableBandwidth(WorkflowImplementation):
         }
 
     def topography_implementation(self, analysis, progress_recorder=None):
-        return _analysis_function(
+        return _workflow(
             analysis.subject,
             "variable_bandwidth_from_profile",
             "variable_bandwidth_from_area",
@@ -528,7 +528,7 @@ class VariableBandwidth(WorkflowImplementation):
         # Resampling not possible for topographies, but all function for same name must
         # have identical signatures. We hence simply fix `nb_points_per_decade` here.
         nb_points_per_decade = 10
-        return _analysis_function_for_surface(
+        return _workflow_for_surface(
             analysis.subject,
             progress_recorder,
             "variable_bandwidth_from_profile",
@@ -1006,7 +1006,7 @@ class RoughnessParameters(WorkflowImplementation):
         return result
 
 
-def _analysis_function(
+def _workflow(
     topography,
     funcname_profile,
     funcname_area,
@@ -1167,7 +1167,7 @@ def _analysis_function(
     )
 
 
-def _analysis_function_for_surface(
+def _workflow_for_surface(
     surface,
     progress_recorder,
     funcname_profile,

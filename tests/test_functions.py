@@ -5,7 +5,7 @@ import pint
 import pytest
 from numpy.testing import assert_allclose
 from SurfaceTopography import NonuniformLineScan, Topography
-from topobank.analysis.models import Workflow
+from topobank.analysis.registry import get_workflow_names
 from topobank.testing.utils import AnalysisResultMock, FakeTopographyModel
 
 from topobank_statistics.workflows import (Autocorrelation,
@@ -813,39 +813,20 @@ def test_scale_dependent_slope_for_surface(simple_surface):
     )
 
 
-@pytest.mark.django_db
-def test_sync_analysis_functions():  # TODO move to main project
-    # TODO this test has a problem: It's not independent from the available functions
+def test_sync_workflows():
+    available_funcs_names = get_workflow_names()
 
-    from django.core.management import call_command
-
-    call_command("register_analysis_functions")
-
-    available_funcs_names = list(
-        x[0] for x in Workflow.objects.values_list("name")
-    )
-
-    expected_funcs_names = sorted(
-        [
-            "topobank_statistics.height_distribution",
-            "topobank_statistics.slope_distribution",
-            "topobank_statistics.curvature_distribution",
-            "topobank_statistics.power_spectral_density",
-            "topobank_statistics.autocorrelation",
-            "topobank_statistics.variable_bandwidth",
-            "topobank_statistics.roughness_parameters",
-            "topobank_statistics.scale_dependent_slope",
-            "topobank_statistics.scale_dependent_curvature",
-        ]
-    )
-
-    assert len(expected_funcs_names) <= len(available_funcs_names)
+    expected_funcs_names = [
+        "topobank_statistics.height_distribution",
+        "topobank_statistics.slope_distribution",
+        "topobank_statistics.curvature_distribution",
+        "topobank_statistics.power_spectral_density",
+        "topobank_statistics.autocorrelation",
+        "topobank_statistics.variable_bandwidth",
+        "topobank_statistics.roughness_parameters",
+        "topobank_statistics.scale_dependent_slope",
+        "topobank_statistics.scale_dependent_curvature",
+    ]
 
     for efn in expected_funcs_names:
         assert efn in available_funcs_names
-
-    #
-    # Call should be idempotent
-    #
-    call_command("register_analysis_functions")
-    assert len(available_funcs_names) == Workflow.objects.count()
