@@ -813,7 +813,7 @@ def test_scale_dependent_slope_for_surface(simple_surface):
     )
 
 
-def test_sync_workflows():
+def test_registered_workflows():
     available_funcs_names = get_workflow_names()
 
     expected_funcs_names = [
