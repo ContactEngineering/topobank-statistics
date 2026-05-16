@@ -29,7 +29,8 @@ classifiers = [
 ]
 dependencies = [
     'SurfaceTopography>=1.14.0',
-    'pint'
+    'pint',
+    'topobank-rest-api @ git+https://github.com/ContactEngineering/topobank-rest-api.git@main',
 ]
 
 [project.optional-dependencies]
@@ -48,3 +49,6 @@ repository = 'https://github.com/ContactEngineering/topobank-statistics'
 
 [tool.hatch.version]
 source = "vcs"
+
+[tool.hatch.metadata]
+allow-direct-references = true
