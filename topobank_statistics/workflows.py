@@ -1,6 +1,7 @@
 from typing import Union
 
 import numpy as np
+from muTimer import Timer
 from SurfaceTopography.Container.Averaging import log_average
 from SurfaceTopography.Container.common import suggest_length_unit
 from SurfaceTopography.Container.ScaleDependentStatistics import \
@@ -35,10 +36,14 @@ class HeightDistribution(WorkflowImplementation):
         wfac: int = 5
 
     def topography_implementation(
-        self, analysis, folder: ManifestSet = None, progress_recorder=None
+        self, analysis, folder: ManifestSet = None, progress_recorder=None, timer=None
     ):
+        if timer is None:
+            timer = Timer()
+
         # Get low level topography from SurfaceTopography model
-        topography = analysis.subject.topography()
+        with timer("read topography"):
+            topography = analysis.subject.topography()
 
         # Get parameters
         bins = self.kwargs.bins
@@ -209,10 +214,14 @@ class SlopeDistribution(WorkflowImplementation):
         bins: Union[int, None] = None
         wfac: int = 5
 
-    def topography_implementation(self, analysis, progress_recorder=None):
+    def topography_implementation(self, analysis, progress_recorder=None, timer=None):
         """Calculates slope distribution for given topography."""
+        if timer is None:
+            timer = Timer()
+
         # Get low level topography from SurfaceTopography model
-        topography = analysis.subject.topography()
+        with timer("read topography"):
+            topography = analysis.subject.topography()
 
         # Get parameters
         bins = self.kwargs.bins
@@ -312,9 +321,13 @@ class CurvatureDistribution(WorkflowImplementation):
         bins: Union[list[float], int, None] = None
         wfac: int = 5
 
-    def topography_implementation(self, analysis, progress_recorder=None):
+    def topography_implementation(self, analysis, progress_recorder=None, timer=None):
+        if timer is None:
+            timer = Timer()
+
         # Get low level topography from SurfaceTopography model
-        topography = analysis.subject.topography()
+        with timer("read topography"):
+            topography = analysis.subject.topography()
 
         bins = self.kwargs.bins
         wfac = self.kwargs.wfac
@@ -410,7 +423,7 @@ class PowerSpectralDensity(WorkflowImplementation):
         window: Union[str, None] = None
         nb_points_per_decade: int = 10
 
-    def topography_implementation(self, analysis, progress_recorder=None):
+    def topography_implementation(self, analysis, progress_recorder=None, timer=None):
         """Calculate Power Spectrum for given topography."""
         # Get low level topography from SurfaceTopography model
         return _workflow(
@@ -430,9 +443,10 @@ class PowerSpectralDensity(WorkflowImplementation):
             window=self.kwargs.window,
             nb_points_per_decade=self.kwargs.nb_points_per_decade,
             folder=analysis.folder,
+            timer=timer,
         )
 
-    def surface_implementation(self, analysis, progress_recorder=None):
+    def surface_implementation(self, analysis, progress_recorder=None, timer=None):
         """Calculate Power Spectrum for given topography."""
         # Get low level topography from SurfaceTopography model
 
@@ -449,6 +463,7 @@ class PowerSpectralDensity(WorkflowImplementation):
             window=self.kwargs.window,
             nb_points_per_decade=self.kwargs.nb_points_per_decade,
             folder=analysis.folder,
+            timer=timer,
         )
 
 
@@ -465,7 +480,7 @@ class Autocorrelation(WorkflowImplementation):
     class Parameters(WorkflowImplementation.Parameters):
         nb_points_per_decade: int = 10
 
-    def topography_implementation(self, analysis, progress_recorder=None):
+    def topography_implementation(self, analysis, progress_recorder=None, timer=None):
         return _workflow(
             analysis.subject,
             "autocorrelation_from_profile",
@@ -480,9 +495,10 @@ class Autocorrelation(WorkflowImplementation):
             "{}²",
             nb_points_per_decade=self.kwargs.nb_points_per_decade,
             folder=analysis.folder,
+            timer=timer,
         )
 
-    def surface_implementation(self, analysis, progress_recorder=None):
+    def surface_implementation(self, analysis, progress_recorder=None, timer=None):
         return _workflow_for_surface(
             analysis.subject,
             progress_recorder,
@@ -495,6 +511,7 @@ class Autocorrelation(WorkflowImplementation):
             "{}²",
             nb_points_per_decade=self.kwargs.nb_points_per_decade,
             folder=analysis.folder,
+            timer=timer,
         )
 
 
@@ -508,7 +525,7 @@ class VariableBandwidth(WorkflowImplementation):
             Surface: "surface_implementation",
         }
 
-    def topography_implementation(self, analysis, progress_recorder=None):
+    def topography_implementation(self, analysis, progress_recorder=None, timer=None):
         return _workflow(
             analysis.subject,
             "variable_bandwidth_from_profile",
@@ -522,9 +539,10 @@ class VariableBandwidth(WorkflowImplementation):
             "{}",
             "{}",
             folder=analysis.folder,
+            timer=timer,
         )
 
-    def surface_implementation(self, analysis, progress_recorder=None):
+    def surface_implementation(self, analysis, progress_recorder=None, timer=None):
         # Resampling not possible for topographies, but all function for same name must
         # have identical signatures. We hence simply fix `nb_points_per_decade` here.
         nb_points_per_decade = 10
@@ -540,6 +558,7 @@ class VariableBandwidth(WorkflowImplementation):
             "{}",
             nb_points_per_decade=nb_points_per_decade,
             folder=analysis.folder,
+            timer=timer,
         )
 
 
@@ -555,12 +574,17 @@ def scale_dependent_roughness_parameter(
     xyname,
     yunit,
     folder=None,
+    timer=None,
     **kwargs,
 ):
+    if timer is None:
+        timer = Timer()
+
     topography_name = topography.name
     topography_url = topography.get_absolute_url()
 
-    topography = topography.topography()
+    with timer("read topography"):
+        topography = topography.topography()
 
     series = []
     alerts = []
@@ -683,8 +707,12 @@ def scale_dependent_roughness_parameter_for_surface(
     xname,
     yunit,
     folder=None,
+    timer=None,
     **kwargs,
 ):
+    if timer is None:
+        timer = Timer()
+
     topographies = ContainerProxy(surface.topography_set.all())
     unit = suggest_length_unit(topographies, "log")
 
@@ -699,14 +727,15 @@ def scale_dependent_roughness_parameter_for_surface(
     )
 
     try:
-        distances, rms_values_sq = scale_dependent_statistical_property(
-            topographies,
-            lambda x, y=None: np.mean(x * x),
-            n=order_of_derivative,
-            unit=unit,
-            progress_callback=progress_callback,
-            **kwargs,
-        )
+        with timer("compute"):
+            distances, rms_values_sq = scale_dependent_statistical_property(
+                topographies,
+                lambda x, y=None: np.mean(x * x),
+                n=order_of_derivative,
+                unit=unit,
+                progress_callback=progress_callback,
+                **kwargs,
+            )
         series = [
             dict(
                 name=xname,
@@ -747,7 +776,7 @@ class ScaleDependentSlope(WorkflowImplementation):
     class Parameters(WorkflowImplementation.Parameters):
         nb_points_per_decade: int = 10
 
-    def topography_implementation(self, analysis, progress_recorder=None):
+    def topography_implementation(self, analysis, progress_recorder=None, timer=None):
         return scale_dependent_roughness_parameter(
             analysis.subject,
             progress_recorder,
@@ -761,9 +790,10 @@ class ScaleDependentSlope(WorkflowImplementation):
             "1",
             nb_points_per_decade=self.kwargs.nb_points_per_decade,
             folder=analysis.folder,
+            timer=timer,
         )
 
-    def surface_implementation(self, analysis, progress_recorder=None):
+    def surface_implementation(self, analysis, progress_recorder=None, timer=None):
         return scale_dependent_roughness_parameter_for_surface(
             analysis.subject,
             progress_recorder,
@@ -774,6 +804,7 @@ class ScaleDependentSlope(WorkflowImplementation):
             "1",
             nb_points_per_decade=self.kwargs.nb_points_per_decade,
             folder=analysis.folder,
+            timer=timer,
         )
 
 
@@ -790,7 +821,7 @@ class ScaleDependentCurvature(WorkflowImplementation):
     class Parameters(WorkflowImplementation.Parameters):
         nb_points_per_decade: int = 10
 
-    def topography_implementation(self, analysis, progress_recorder=None):
+    def topography_implementation(self, analysis, progress_recorder=None, timer=None):
         return scale_dependent_roughness_parameter(
             analysis.subject,
             progress_recorder,
@@ -804,9 +835,10 @@ class ScaleDependentCurvature(WorkflowImplementation):
             "{}⁻¹",
             nb_points_per_decade=self.kwargs.nb_points_per_decade,
             folder=analysis.folder,
+            timer=timer,
         )
 
-    def surface_implementation(self, analysis, progress_recorder=None):
+    def surface_implementation(self, analysis, progress_recorder=None, timer=None):
         return scale_dependent_roughness_parameter_for_surface(
             analysis.subject,
             progress_recorder,
@@ -817,6 +849,7 @@ class ScaleDependentCurvature(WorkflowImplementation):
             "{}⁻¹",
             nb_points_per_decade=self.kwargs.nb_points_per_decade,
             folder=analysis.folder,
+            timer=timer,
         )
 
 
@@ -829,7 +862,7 @@ class RoughnessParameters(WorkflowImplementation):
             Topography: "topography_implementation",
         }
 
-    def topography_implementation(self, analysis, progress_recorder=None):
+    def topography_implementation(self, analysis, progress_recorder=None, timer=None):
         """Calculate roughness parameters for given topography.
 
         Parameters
@@ -850,8 +883,12 @@ class RoughnessParameters(WorkflowImplementation):
          unit, e.g. 'nm'
         """
 
+        if timer is None:
+            timer = Timer()
+
         # Get low level topography from SurfaceTopography model
-        topography = analysis.subject.topography()
+        with timer("read topography"):
+            topography = analysis.subject.topography()
 
         # noinspection PyBroadException
         try:
@@ -1021,13 +1058,18 @@ def _workflow(
     conv_2d_fac=1.0,
     conv_2d_exponent=0,
     folder=None,
+    timer=None,
     **kwargs,
 ):
+    if timer is None:
+        timer = Timer()
+
     topography_name = topography.name
     topography_url = topography.get_absolute_url()
 
     # Switch to low level topography from SurfaceTopography model
-    topography = topography.topography()
+    with timer("read topography"):
+        topography = topography.topography()
 
     alerts = []  # list of dicts with keys 'alert_class', 'message'
     series = []  # list of dicts with series data, keys: 'name', 'x', 'y', 'visible'
@@ -1178,9 +1220,13 @@ def _workflow_for_surface(
     xunit,
     yunit,
     folder=None,
+    timer=None,
     **kwargs,
 ):
     """Calculate average analysis result for a surface."""
+    if timer is None:
+        timer = Timer()
+
     topographies = ContainerProxy(surface.topography_set.all())
     unit = suggest_length_unit(topographies, "log")
 
@@ -1194,13 +1240,14 @@ def _workflow_for_surface(
     )
 
     try:
-        r, A = log_average(
-            topographies,
-            funcname_profile,
-            unit,
-            progress_callback=progress_callback,
-            **kwargs,
-        )
+        with timer("compute"):
+            r, A = log_average(
+                topographies,
+                funcname_profile,
+                unit,
+                progress_callback=progress_callback,
+                **kwargs,
+            )
 
         # Remove NaNs
         r = r[np.isfinite(A)]
