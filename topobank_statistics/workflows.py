@@ -824,6 +824,7 @@ class RoughnessParameters(WorkflowImplementation):
     class Meta:
         name = "topobank_statistics.roughness_parameters"
         display_name = "Roughness parameters"
+        visualization_type = VIZ_ROUGHNESS_PARAMETERS
 
         implementations = {
             Topography: "topography_implementation",
