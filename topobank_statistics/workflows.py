@@ -581,7 +581,6 @@ def scale_dependent_roughness_parameter(
         timer = Timer()
 
     topography_name = topography.name
-    topography_url = topography.get_absolute_url()
 
     with timer("read topography"):
         topography = topography.topography()
@@ -638,7 +637,7 @@ def scale_dependent_roughness_parameter(
         except CannotPerformAnalysisError as exc:
             alerts.append(
                 make_alert_entry(
-                    "warning", topography_name, topography_url, series_name, str(exc)
+                    "warning", topography_name, series_name, str(exc)
                 )
             )
         progress_offset += 1
@@ -746,7 +745,7 @@ def scale_dependent_roughness_parameter_for_surface(
     except CannotPerformAnalysisError as exc:
         alerts.append(
             make_alert_entry(
-                "warning", surface.name, surface.get_absolute_url(), xname, str(exc)
+                "warning", surface.name, xname, str(exc)
             )
         )
 
@@ -1066,7 +1065,6 @@ def _workflow(
         timer = Timer()
 
     topography_name = topography.name
-    topography_url = topography.get_absolute_url()
 
     # Switch to low level topography from SurfaceTopography model
     with timer("read topography"):
@@ -1093,7 +1091,7 @@ def _workflow(
     except CannotPerformAnalysisError as exc:
         alerts.append(
             make_alert_entry(
-                "warning", topography_name, topography_url, xname, str(exc)
+                "warning", topography_name, xname, str(exc)
             )
         )
 
@@ -1125,7 +1123,7 @@ def _workflow(
         except CannotPerformAnalysisError as exc:
             alerts.append(
                 make_alert_entry(
-                    "warning", topography_name, topography_url, yname, str(exc)
+                    "warning", topography_name, yname, str(exc)
                 )
             )
 
@@ -1149,7 +1147,7 @@ def _workflow(
         except CannotPerformAnalysisError as exc:
             alerts.append(
                 make_alert_entry(
-                    "warning", topography_name, topography_url, aname, str(exc)
+                    "warning", topography_name, aname, str(exc)
                 )
             )
 
@@ -1267,7 +1265,7 @@ def _workflow_for_surface(
     except CannotPerformAnalysisError as exc:
         alerts.append(
             make_alert_entry(
-                "warning", surface.name, surface.get_absolute_url(), xname, str(exc)
+                "warning", surface.name, xname, str(exc)
             )
         )
 
