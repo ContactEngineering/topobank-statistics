@@ -174,11 +174,8 @@ def _moments_histogram_gaussian(
             (exc.args[0] == "supplied range of [0.0, inf] is not finite")
             or ("is reentrant" in exc.args[0])
         ):
-            # TODO: this message hard-codes "curvature distribution", but this
-            # helper is also used for the slope distribution; make the message
-            # reflect the actual quantity being computed.
             raise ReentrantDataError(
-                "Cannot calculate curvature distribution for reentrant measurements."
+                f"Cannot calculate {quantity} distribution for reentrant measurements."
             )
         raise
 
