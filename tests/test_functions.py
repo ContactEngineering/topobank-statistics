@@ -15,10 +15,17 @@ from topobank_statistics.workflows import (Autocorrelation,
                                            RoughnessParameters,
                                            ScaleDependentSlope,
                                            SlopeDistribution,
-                                           VariableBandwidth)
+                                           VariableBandwidth,
+                                           _chauvenet_outlier_mask,
+                                           _slope_outlier_report,
+                                           _slope_outlier_stats)
 
 EXPECTED_KEYS_FOR_DIST_ANALYSIS = sorted(
     ["name", "scalars", "xlabel", "ylabel", "xunit", "yunit", "series"]
+)
+# The slope distribution additionally reports outlier warnings (see #35).
+EXPECTED_KEYS_FOR_SLOPE_DIST_ANALYSIS = sorted(
+    ["name", "scalars", "xlabel", "ylabel", "xunit", "yunit", "series", "alerts"]
 )
 EXPECTED_KEYS_FOR_PLOT_CARD_ANALYSIS = sorted(
     [
@@ -89,7 +96,7 @@ def test_slope_distribution_simple_line_scan():
         AnalysisResultMock(topography)
     )
 
-    assert sorted(result.keys()) == EXPECTED_KEYS_FOR_DIST_ANALYSIS
+    assert sorted(result.keys()) == EXPECTED_KEYS_FOR_SLOPE_DIST_ANALYSIS
 
     assert result["name"] == "Slope distribution"
     assert result["scalars"] == {
@@ -288,7 +295,7 @@ def test_slope_distribution_simple_2d_topography(simple_linear_2d_topography):
         AnalysisResultMock(topography)
     )
 
-    assert sorted(result.keys()) == EXPECTED_KEYS_FOR_DIST_ANALYSIS
+    assert sorted(result.keys()) == EXPECTED_KEYS_FOR_SLOPE_DIST_ANALYSIS
 
     assert result["name"] == "Slope distribution"
 
@@ -843,3 +850,100 @@ def test_registered_workflows():
 
     for efn in expected_funcs_names:
         assert efn in available_funcs_names
+
+
+def test_chauvenet_outlier_mask_flags_extreme_values():
+    # A well-behaved spread with three injected extreme outliers.
+    normal = np.linspace(-1.0, 1.0, 1000)
+    arr = np.concatenate([normal, [50.0, -60.0, 45.0]])
+
+    mask, z_c = _chauvenet_outlier_mask(arr)
+
+    # Only the three injected spikes are flagged; the bulk is not.
+    assert mask.sum() == 3
+    assert mask[-3:].all()
+    assert not mask[:1000].any()
+    # Threshold grows like sqrt(2 ln N); a few sigma for ~1000 points.
+    assert 3.0 < z_c < 4.0
+
+
+def test_chauvenet_outlier_mask_no_false_positives_on_clean_data():
+    # Symmetric, bounded data without outliers.
+    arr = np.sin(np.linspace(0, 20 * np.pi, 5000))
+    mask, _ = _chauvenet_outlier_mask(arr)
+    assert not mask.any()
+
+
+def test_chauvenet_outlier_mask_degenerate_inputs():
+    # Too few points and constant data yield no outliers (no crash).
+    mask, z_c = _chauvenet_outlier_mask(np.array([1.0, 2.0]))
+    assert not mask.any()
+    mask, z_c = _chauvenet_outlier_mask(np.full(100, 3.0))
+    assert not mask.any()
+
+
+def test_slope_outlier_report_reports_trimmed_rms():
+    slopes = np.concatenate([np.linspace(-0.5, 0.5, 1000), [30.0]])
+    extra, alert = _slope_outlier_report(slopes, "x direction", "test topography")
+
+    assert alert is not None
+    assert alert["alert_class"] == "alert-warning"
+    key = "RMS Slope, outliers excluded (x direction)"
+    assert key in extra
+    rms_full = np.sqrt(np.mean(slopes**2))
+    # The trimmed RMS excludes the spike and is much smaller than the full RMS.
+    assert extra[key]["value"] < rms_full
+    np.testing.assert_allclose(
+        extra[key]["value"], np.sqrt(np.mean(slopes[:-1] ** 2)), rtol=1e-6
+    )
+
+
+def test_slope_outlier_report_clean_data_no_alert():
+    slopes = np.linspace(-0.5, 0.5, 1000)
+    extra, alert = _slope_outlier_report(slopes, "x direction", "test topography")
+    assert alert is None
+    assert extra == {}
+
+
+def test_slope_outlier_stats_reports_trimmed_and_none_when_clean():
+    slopes = np.concatenate([np.linspace(-0.5, 0.5, 1000), [30.0, -25.0]])
+    stats = _slope_outlier_stats(slopes)
+    assert stats is not None
+    assert stats["n_outliers"] == 2
+    assert stats["rms_trimmed"] < stats["rms_full"]
+    np.testing.assert_allclose(
+        stats["rms_trimmed"], np.sqrt(np.mean(slopes[:1000] ** 2)), rtol=1e-6
+    )
+    # Clean, bounded data has no outliers.
+    assert _slope_outlier_stats(np.linspace(-0.5, 0.5, 1000)) is None
+
+
+def test_roughness_parameters_reports_trimmed_rms_slope_with_outlier():
+    # A surface with a spread of slopes (sinusoid along x) plus one strong
+    # spike, which produces a Chauvenet outlier in the x-direction slope.
+    nx, ny = 200, 20
+    heights = np.sin(np.arange(nx) / 3.0).reshape((nx, 1)).repeat(ny, axis=1)
+    heights[100, :] += 500.0  # steep local feature -> outlier slopes
+    t = Topography(heights, physical_sizes=(nx, ny), unit="nm")
+    topography = FakeTopographyModel(t)
+
+    result = RoughnessParameters().topography_implementation(
+        AnalysisResultMock(topography)
+    )
+
+    trimmed = [r for r in result if r["quantity"] == "RMS slope, outliers excluded"]
+    raw = {r["direction"]: r for r in result if r["quantity"] == "RMS slope"}
+
+    assert len(trimmed) >= 1  # at least the x direction is flagged
+    for row in trimmed:
+        # The trimmed RMS slope is smaller than the raw one in the same direction.
+        assert row["value"] < raw[row["direction"]]["value"]
+
+
+def test_roughness_parameters_no_trimmed_row_when_clean(simple_linear_2d_topography):
+    # Constant slopes -> no outliers -> no "outliers excluded" rows.
+    topography = FakeTopographyModel(simple_linear_2d_topography)
+    result = RoughnessParameters().topography_implementation(
+        AnalysisResultMock(topography)
+    )
+    assert not [r for r in result if r["quantity"] == "RMS slope, outliers excluded"]
