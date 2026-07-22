@@ -17,7 +17,8 @@ from topobank_statistics.workflows import (Autocorrelation,
                                            SlopeDistribution,
                                            VariableBandwidth,
                                            _chauvenet_outlier_mask,
-                                           _slope_outlier_report)
+                                           _slope_outlier_report,
+                                           _slope_outlier_stats)
 
 EXPECTED_KEYS_FOR_DIST_ANALYSIS = sorted(
     ["name", "scalars", "xlabel", "ylabel", "xunit", "yunit", "series"]
@@ -902,3 +903,47 @@ def test_slope_outlier_report_clean_data_no_alert():
     extra, alert = _slope_outlier_report(slopes, "x direction", "test topography")
     assert alert is None
     assert extra == {}
+
+
+def test_slope_outlier_stats_reports_trimmed_and_none_when_clean():
+    slopes = np.concatenate([np.linspace(-0.5, 0.5, 1000), [30.0, -25.0]])
+    stats = _slope_outlier_stats(slopes)
+    assert stats is not None
+    assert stats["n_outliers"] == 2
+    assert stats["rms_trimmed"] < stats["rms_full"]
+    np.testing.assert_allclose(
+        stats["rms_trimmed"], np.sqrt(np.mean(slopes[:1000] ** 2)), rtol=1e-6
+    )
+    # Clean, bounded data has no outliers.
+    assert _slope_outlier_stats(np.linspace(-0.5, 0.5, 1000)) is None
+
+
+def test_roughness_parameters_reports_trimmed_rms_slope_with_outlier():
+    # A surface with a spread of slopes (sinusoid along x) plus one strong
+    # spike, which produces a Chauvenet outlier in the x-direction slope.
+    nx, ny = 200, 20
+    heights = np.sin(np.arange(nx) / 3.0).reshape((nx, 1)).repeat(ny, axis=1)
+    heights[100, :] += 500.0  # steep local feature -> outlier slopes
+    t = Topography(heights, physical_sizes=(nx, ny), unit="nm")
+    topography = FakeTopographyModel(t)
+
+    result = RoughnessParameters().topography_implementation(
+        AnalysisResultMock(topography)
+    )
+
+    trimmed = [r for r in result if r["quantity"] == "RMS slope, outliers excluded"]
+    raw = {r["direction"]: r for r in result if r["quantity"] == "RMS slope"}
+
+    assert len(trimmed) >= 1  # at least the x direction is flagged
+    for row in trimmed:
+        # The trimmed RMS slope is smaller than the raw one in the same direction.
+        assert row["value"] < raw[row["direction"]]["value"]
+
+
+def test_roughness_parameters_no_trimmed_row_when_clean(simple_linear_2d_topography):
+    # Constant slopes -> no outliers -> no "outliers excluded" rows.
+    topography = FakeTopographyModel(simple_linear_2d_topography)
+    result = RoughnessParameters().topography_implementation(
+        AnalysisResultMock(topography)
+    )
+    assert not [r for r in result if r["quantity"] == "RMS slope, outliers excluded"]

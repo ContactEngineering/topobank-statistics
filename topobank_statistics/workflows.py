@@ -204,6 +204,30 @@ def _chauvenet_outlier_mask(arr):
     return mask, z_c
 
 
+def _slope_outlier_stats(slopes):
+    """Return RMS-slope outlier statistics for a slope array, or ``None``.
+
+    ``slopes`` are the (unmasked) slope values for one direction. When
+    Chauvenet outliers are present, returns a dict with ``n_outliers``,
+    ``z_c``, ``rms_full`` and ``rms_trimmed`` (the RMS slope with the outliers
+    removed); otherwise returns ``None``.
+    """
+    slopes = np.asarray(slopes)
+    mask, z_c = _chauvenet_outlier_mask(slopes)
+    n_outliers = int(np.count_nonzero(mask))
+    if n_outliers == 0:
+        return None
+    inliers = slopes[~mask]
+    return {
+        "n_outliers": n_outliers,
+        "z_c": z_c,
+        "rms_full": float(np.sqrt(np.mean(slopes**2))),
+        "rms_trimmed": (
+            float(np.sqrt(np.mean(inliers**2))) if inliers.size else float("nan")
+        ),
+    }
+
+
 def _slope_outlier_report(slopes, label, topography_name):
     """Return ``(extra_scalars, alert)`` describing RMS-slope outliers.
 
@@ -212,26 +236,23 @@ def _slope_outlier_report(slopes, label, topography_name):
     values removed) is reported alongside a warning; otherwise ``({}, None)`` is
     returned so the RMS slope is presented without embellishment.
     """
-    slopes = np.asarray(slopes)
-    mask, z_c = _chauvenet_outlier_mask(slopes)
-    n_outliers = int(np.count_nonzero(mask))
-    if n_outliers == 0:
+    stats = _slope_outlier_stats(slopes)
+    if stats is None:
         return {}, None
 
-    rms_full = np.sqrt(np.mean(slopes**2))
-    inliers = slopes[~mask]
-    rms_trimmed = float(np.sqrt(np.mean(inliers**2))) if inliers.size else float("nan")
-
     extra_scalars = {
-        f"RMS Slope, outliers excluded ({label})": dict(value=rms_trimmed, unit="1"),
+        f"RMS Slope, outliers excluded ({label})": dict(
+            value=stats["rms_trimmed"], unit="1"
+        ),
     }
     message = (
-        f"{n_outliers} extreme local slope value(s) in the {label} exceed the "
-        f"Chauvenet outlier threshold (|slope - median| > {z_c:.1f} robust "
-        f"standard deviations). Such values often stem from overhangs or other "
-        f"reentrant/measurement artifacts and dominate the RMS slope, which "
-        f"drops from {rms_full:.3g} to {rms_trimmed:.3g} when they are excluded. "
-        f"Interpret the RMS slope in the {label} with care."
+        f"{stats['n_outliers']} extreme local slope value(s) in the {label} "
+        f"exceed the Chauvenet outlier threshold (|slope - median| > "
+        f"{stats['z_c']:.1f} robust standard deviations). Such values often stem "
+        f"from overhangs or other reentrant/measurement artifacts and dominate "
+        f"the RMS slope, which drops from {stats['rms_full']:.3g} to "
+        f"{stats['rms_trimmed']:.3g} when they are excluded. Interpret the RMS "
+        f"slope in the {label} with care."
     )
     alert = make_alert_entry("warning", topography_name, "Slope distribution", message)
     return extra_scalars, alert
@@ -1124,6 +1145,34 @@ class RoughnessParameters(WorkflowImplementation):
                     },
                 ]
             )
+
+        #
+        # RMS slope with outliers excluded (#35)
+        #
+        # Extreme local slopes -- typically overhang/reentrant artifacts -- can
+        # dominate the RMS slope. When Chauvenet outliers are present in a
+        # direction, additionally report the RMS slope computed with those
+        # values removed, so the artifact-free value is visible next to the raw
+        # one. Nothing is added when the slopes are clean.
+        #
+        if is_2D:
+            dh_dx, dh_dy = topography.derivative(n=1)
+            slopes_by_direction = [("x", dh_dx), ("y", dh_dy)]
+        else:
+            slopes_by_direction = [("x", topography.derivative(n=1))]
+        for direction, slopes in slopes_by_direction:
+            stats = _slope_outlier_stats(np.ma.compressed(slopes))
+            if stats is not None:
+                result.append(
+                    {
+                        "quantity": "RMS slope, outliers excluded",
+                        "from": FROM_1D,
+                        "symbol": "R&Delta;q",
+                        "direction": direction,
+                        "value": stats["rms_trimmed"],
+                        "unit": 1,
+                    }
+                )
 
         #
         # Bandwidth (pixel_size, scan_size), see GH #677
