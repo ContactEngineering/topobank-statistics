@@ -448,9 +448,27 @@ def test_scale_dependent_slope_simple_2d_topography(simple_linear_2d_topography)
     assert sorted(result.keys()) == EXPECTED_KEYS_FOR_PLOT_CARD_ANALYSIS
 
     assert result["name"] == "Scale-dependent slope"
-    for dataset in result["series"]:
-        if dataset["name"] == "Along y":
-            np.testing.assert_almost_equal(dataset["y"], 2 * np.ones_like(dataset["y"]))
+
+    # ScaleDependentSlope emits series named "Slope in x-direction",
+    # "Slope in y-direction" and "Gradient" (see the xname/yname arguments in
+    # ScaleDependentSlope.topography_implementation). For h(x,y) = -2y + 9 the
+    # slope in y-direction has magnitude 2 everywhere and the slope in
+    # x-direction is 0 everywhere.
+    series_by_name = {dataset["name"]: dataset for dataset in result["series"]}
+
+    # Only reliable scales carry finite values; unreliable scales are NaN. We
+    # assert on the finite entries (there must be at least one).
+    assert "Slope in y-direction" in series_by_name
+    slope_y = np.asarray(series_by_name["Slope in y-direction"]["y"])
+    finite_y = slope_y[np.isfinite(slope_y)]
+    assert len(finite_y) > 0
+    np.testing.assert_almost_equal(finite_y, 2 * np.ones_like(finite_y))
+
+    assert "Slope in x-direction" in series_by_name
+    slope_x = np.asarray(series_by_name["Slope in x-direction"]["y"])
+    finite_x = slope_x[np.isfinite(slope_x)]
+    assert len(finite_x) > 0
+    np.testing.assert_almost_equal(finite_x, np.zeros_like(finite_x))
 
 
 def test_variable_bandwidth_simple_2d_topography(simple_linear_2d_topography):

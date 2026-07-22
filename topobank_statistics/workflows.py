@@ -67,6 +67,8 @@ class HeightDistribution(WorkflowImplementation):
         minval = mean_height - wfac * rms_height
         maxval = mean_height + wfac * rms_height
         x_gauss = np.linspace(minval, maxval, 1001)
+        # TODO: divide-by-zero when rms_height == 0 (flat topography) produces
+        # inf/nan in the Gaussian fit; guard rms_height before dividing.
         y_gauss = np.exp(-((x_gauss - mean_height) ** 2) / (2 * rms_height**2)) / (
             np.sqrt(2 * np.pi) * rms_height
         )
@@ -151,7 +153,11 @@ def _moments_histogram_gaussian(
     result['series'].extend(series)
     """
 
-    arr = arr.flatten()
+    # Compress the (possibly) masked array to drop masked entries before
+    # histogramming. np.histogram would otherwise strip the mask via
+    # np.asarray and bin the fill values. This also keeps mean/rms consistent
+    # with the histogrammed data. For non-masked inputs this simply flattens.
+    arr = np.ma.compressed(arr)
 
     mean = arr.mean()
     rms = np.sqrt((arr**2).mean())
@@ -169,7 +175,7 @@ def _moments_histogram_gaussian(
             or ("is reentrant" in exc.args[0])
         ):
             raise ReentrantDataError(
-                "Cannot calculate curvature distribution for reentrant measurements."
+                f"Cannot calculate {quantity} distribution for reentrant measurements."
             )
         raise
 
@@ -190,6 +196,8 @@ def _moments_histogram_gaussian(
         minval = mean - wfac * rms
         maxval = mean + wfac * rms
         x_gauss = np.linspace(minval, maxval, 1001)
+        # TODO: divide-by-zero when rms == 0 produces inf/nan in the Gaussian
+        # fit; guard rms before dividing.
         y_gauss = np.exp(-((x_gauss - mean) ** 2) / (2 * rms**2)) / (
             np.sqrt(2 * np.pi) * rms
         )
@@ -375,6 +383,8 @@ class CurvatureDistribution(WorkflowImplementation):
         minval = mean_curv - wfac * rms_curv
         maxval = mean_curv + wfac * rms_curv
         x_gauss = np.linspace(minval, maxval, 1001)
+        # TODO: divide-by-zero when rms_curv == 0 produces inf/nan in the
+        # Gaussian fit; guard rms_curv before dividing.
         y_gauss = np.exp(-((x_gauss - mean_curv) ** 2) / (2 * rms_curv**2)) / (
             np.sqrt(2 * np.pi) * rms_curv
         )
@@ -581,7 +591,6 @@ def scale_dependent_roughness_parameter(
         timer = Timer()
 
     topography_name = topography.name
-    topography_url = topography.get_absolute_url()
 
     with timer("read topography"):
         topography = topography.topography()
@@ -638,7 +647,7 @@ def scale_dependent_roughness_parameter(
         except CannotPerformAnalysisError as exc:
             alerts.append(
                 make_alert_entry(
-                    "warning", topography_name, topography_url, series_name, str(exc)
+                    "warning", topography_name, series_name, str(exc)
                 )
             )
         progress_offset += 1
@@ -667,7 +676,7 @@ def scale_dependent_roughness_parameter(
 
     if topography.dim == 2:
         y_kwargs = dict(
-            func=lambda x, y=None: np.mean(x * x),
+            func=lambda x, y: np.mean(y * y),
             n=order_of_derivative,
             progress_callback=progress_callback,
             **kwargs,
@@ -720,6 +729,8 @@ def scale_dependent_roughness_parameter_for_surface(
     alerts = []
 
     # Factor of two for curvature
+    # TODO: set_progress(i + 1, n) can report progress > 100% (e.g. on the
+    # final step where i + 1 can exceed n); clamp the reported value to n.
     progress_callback = (
         None
         if progress_recorder is None
@@ -746,7 +757,7 @@ def scale_dependent_roughness_parameter_for_surface(
     except CannotPerformAnalysisError as exc:
         alerts.append(
             make_alert_entry(
-                "warning", surface.name, surface.get_absolute_url(), xname, str(exc)
+                "warning", surface.name, xname, str(exc)
             )
         )
 
@@ -1066,7 +1077,6 @@ def _workflow(
         timer = Timer()
 
     topography_name = topography.name
-    topography_url = topography.get_absolute_url()
 
     # Switch to low level topography from SurfaceTopography model
     with timer("read topography"):
@@ -1093,7 +1103,7 @@ def _workflow(
     except CannotPerformAnalysisError as exc:
         alerts.append(
             make_alert_entry(
-                "warning", topography_name, topography_url, xname, str(exc)
+                "warning", topography_name, xname, str(exc)
             )
         )
 
@@ -1125,7 +1135,7 @@ def _workflow(
         except CannotPerformAnalysisError as exc:
             alerts.append(
                 make_alert_entry(
-                    "warning", topography_name, topography_url, yname, str(exc)
+                    "warning", topography_name, yname, str(exc)
                 )
             )
 
@@ -1149,7 +1159,7 @@ def _workflow(
         except CannotPerformAnalysisError as exc:
             alerts.append(
                 make_alert_entry(
-                    "warning", topography_name, topography_url, aname, str(exc)
+                    "warning", topography_name, aname, str(exc)
                 )
             )
 
@@ -1234,6 +1244,8 @@ def _workflow_for_surface(
     series = []
     alerts = []
 
+    # TODO: set_progress(i + 1, n) can report progress > 100% (e.g. on the
+    # final step where i + 1 can exceed n); clamp the reported value to n.
     progress_callback = (
         None
         if progress_recorder is None
@@ -1267,7 +1279,7 @@ def _workflow_for_surface(
     except CannotPerformAnalysisError as exc:
         alerts.append(
             make_alert_entry(
-                "warning", surface.name, surface.get_absolute_url(), xname, str(exc)
+                "warning", surface.name, xname, str(exc)
             )
         )
 
