@@ -53,25 +53,19 @@ class HeightDistribution(WorkflowImplementation):
 
         profile = topography.heights()
 
+        compressed_profile = np.ma.compressed(profile)
         mean_height = np.mean(profile)
         rms_height = (
             topography.rms_height_from_area()
             if topography.dim == 2
             else topography.rms_height_from_profile()
         )
+        # Standard deviation about the mean, used as the width of the Gaussian
+        # fit (see GH statistics#38); RMS about zero would be too wide when the
+        # heights have a nonzero mean.
+        std_height = compressed_profile.std()
 
-        hist, bin_edges = np.histogram(
-            np.ma.compressed(profile), bins=bins, density=True
-        )
-
-        minval = mean_height - wfac * rms_height
-        maxval = mean_height + wfac * rms_height
-        x_gauss = np.linspace(minval, maxval, 1001)
-        # TODO: divide-by-zero when rms_height == 0 (flat topography) produces
-        # inf/nan in the Gaussian fit; guard rms_height before dividing.
-        y_gauss = np.exp(-((x_gauss - mean_height) ** 2) / (2 * rms_height**2)) / (
-            np.sqrt(2 * np.pi) * rms_height
-        )
+        hist, bin_edges = np.histogram(compressed_profile, bins=bins, density=True)
 
         try:
             unit = topography.unit
@@ -84,12 +78,20 @@ class HeightDistribution(WorkflowImplementation):
                 x=(bin_edges[:-1] + bin_edges[1:]) / 2,
                 y=hist,
             ),
-            dict(
-                name=GAUSSIAN_FIT_SERIES_NAME,
-                x=x_gauss,
-                y=y_gauss,
-            ),
         ]
+
+        # Only add the Gaussian fit when the width is well defined (a flat
+        # topography has std == 0, which would divide by zero).
+        if std_height > 0 and np.isfinite(std_height):
+            minval = mean_height - wfac * std_height
+            maxval = mean_height + wfac * std_height
+            x_gauss = np.linspace(minval, maxval, 1001)
+            y_gauss = np.exp(
+                -((x_gauss - mean_height) ** 2) / (2 * std_height**2)
+            ) / (np.sqrt(2 * np.pi) * std_height)
+            series.append(
+                dict(name=GAUSSIAN_FIT_SERIES_NAME, x=x_gauss, y=y_gauss)
+            )
 
         return dict(
             name="Height distribution",
@@ -133,6 +135,37 @@ def _reasonable_histogram_range(arr):
     return hist_range
 
 
+def _histogram_with_reentrant_guard(arr, bins, quantity):
+    """``np.histogram(density=True)`` with a finite-range guard.
+
+    Raises :class:`ReentrantDataError` when the data is empty or its
+    histogram range is not finite (NaN/Inf, e.g. from reentrant/multivalued
+    measurements) instead of letting ``np.histogram`` raise a bare
+    ``ValueError`` (see GH statistics#30). ``arr`` is expected to already be
+    compressed (no masked entries).
+    """
+    arr = np.asarray(arr)
+    # `or` short-circuits so arr.min()/max() are not evaluated for an empty
+    # array (which would itself raise).
+    if arr.size == 0 or not np.all(np.isfinite([arr.min(), arr.max()])):
+        raise ReentrantDataError(
+            f"Cannot calculate {quantity} distribution for reentrant measurements."
+        )
+    try:
+        return np.histogram(
+            arr, bins=bins, density=True, range=_reasonable_histogram_range(arr)
+        )
+    except (ValueError, RuntimeError) as exc:
+        # Fallback for range/finiteness errors raised from deeper in the stack.
+        if exc.args and (
+            "is not finite" in str(exc.args[0]) or "is reentrant" in str(exc.args[0])
+        ):
+            raise ReentrantDataError(
+                f"Cannot calculate {quantity} distribution for reentrant measurements."
+            )
+        raise
+
+
 def _moments_histogram_gaussian(
     arr, bins, topography, wfac, quantity, label, unit, gaussian=True
 ):
@@ -161,23 +194,12 @@ def _moments_histogram_gaussian(
 
     mean = arr.mean()
     rms = np.sqrt((arr**2).mean())
+    # Standard deviation about the mean, used as the width of the Gaussian fit
+    # (see GH statistics#38). RMS (about zero) overestimates the width whenever
+    # the data has a nonzero mean.
+    std = arr.std()
 
-    try:
-        hist, bin_edges = np.histogram(
-            arr, bins=bins, density=True, range=_reasonable_histogram_range(arr)
-        )
-    except (ValueError, RuntimeError) as exc:
-        # Workaround for GH #683 in order to recognize reentrant measurements.
-        # Replace with catching of specific exception when
-        # https://github.com/ContactEngineering/SurfaceTopography/issues/108 is implemented.
-        if (len(exc.args) > 0) and (
-            (exc.args[0] == "supplied range of [0.0, inf] is not finite")
-            or ("is reentrant" in exc.args[0])
-        ):
-            raise ReentrantDataError(
-                f"Cannot calculate {quantity} distribution for reentrant measurements."
-            )
-        raise
+    hist, bin_edges = _histogram_with_reentrant_guard(arr, bins, quantity)
 
     scalars = {
         f"Mean {quantity.capitalize()} ({label})": dict(value=mean, unit=unit),
@@ -192,14 +214,14 @@ def _moments_histogram_gaussian(
         )
     ]
 
-    if gaussian:
-        minval = mean - wfac * rms
-        maxval = mean + wfac * rms
+    # Only add the Gaussian fit when the width is well defined (a flat/constant
+    # quantity has std == 0, which would divide by zero).
+    if gaussian and std > 0 and np.isfinite(std):
+        minval = mean - wfac * std
+        maxval = mean + wfac * std
         x_gauss = np.linspace(minval, maxval, 1001)
-        # TODO: divide-by-zero when rms == 0 produces inf/nan in the Gaussian
-        # fit; guard rms before dividing.
-        y_gauss = np.exp(-((x_gauss - mean) ** 2) / (2 * rms**2)) / (
-            np.sqrt(2 * np.pi) * rms
+        y_gauss = np.exp(-((x_gauss - mean) ** 2) / (2 * std**2)) / (
+            np.sqrt(2 * np.pi) * std
         )
 
         series.append(
@@ -359,35 +381,11 @@ class CurvatureDistribution(WorkflowImplementation):
         )
 
         hist_arr = np.ma.compressed(curv)
+        # Standard deviation about the mean, used as the width of the Gaussian
+        # fit (see GH statistics#38).
+        std_curv = hist_arr.std() if hist_arr.size > 0 else 0.0
 
-        try:
-            hist, bin_edges = np.histogram(
-                hist_arr,
-                bins=bins,
-                range=_reasonable_histogram_range(hist_arr),
-                density=True,
-            )
-        except (ValueError, RuntimeError) as exc:
-            # Workaround for GH #683 in order to recognize reentrant measurements.
-            # Replace with catching of specific exception when
-            # https://github.com/ContactEngineering/SurfaceTopography/issues/108 is implemented.
-            if (len(exc.args) > 0) and (
-                (exc.args[0] == "supplied range of [-inf, inf] is not finite")
-                or ("is reentrant" in exc.args[0])
-            ):
-                raise ReentrantDataError(
-                    "Cannot calculate curvature distribution for reentrant measurements."
-                )
-            raise
-
-        minval = mean_curv - wfac * rms_curv
-        maxval = mean_curv + wfac * rms_curv
-        x_gauss = np.linspace(minval, maxval, 1001)
-        # TODO: divide-by-zero when rms_curv == 0 produces inf/nan in the
-        # Gaussian fit; guard rms_curv before dividing.
-        y_gauss = np.exp(-((x_gauss - mean_curv) ** 2) / (2 * rms_curv**2)) / (
-            np.sqrt(2 * np.pi) * rms_curv
-        )
+        hist, bin_edges = _histogram_with_reentrant_guard(hist_arr, bins, "curvature")
 
         unit = topography.unit
         inverse_unit = "{}⁻¹".format(unit)
@@ -398,12 +396,20 @@ class CurvatureDistribution(WorkflowImplementation):
                 x=(bin_edges[:-1] + bin_edges[1:]) / 2,
                 y=hist,
             ),
-            dict(
-                name=GAUSSIAN_FIT_SERIES_NAME,
-                x=x_gauss,
-                y=y_gauss,
-            ),
         ]
+
+        # Only add the Gaussian fit when the width is well defined (a flat
+        # topography has std == 0, which would divide by zero).
+        if std_curv > 0 and np.isfinite(std_curv):
+            minval = mean_curv - wfac * std_curv
+            maxval = mean_curv + wfac * std_curv
+            x_gauss = np.linspace(minval, maxval, 1001)
+            y_gauss = np.exp(-((x_gauss - mean_curv) ** 2) / (2 * std_curv**2)) / (
+                np.sqrt(2 * np.pi) * std_curv
+            )
+            series.append(
+                dict(name=GAUSSIAN_FIT_SERIES_NAME, x=x_gauss, y=y_gauss)
+            )
 
         return dict(
             name="Curvature distribution",
@@ -422,7 +428,7 @@ class CurvatureDistribution(WorkflowImplementation):
 class PowerSpectralDensity(WorkflowImplementation):
     class Meta:
         name = "topobank_statistics.power_spectral_density"
-        display_name = "Power spectrum"
+        display_name = "Power spectral density"
 
         implementations = {
             Topography: "topography_implementation",

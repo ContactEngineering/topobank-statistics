@@ -15,7 +15,7 @@ def test_autoload_workflows():
         'Height distribution',
         'Slope distribution',
         'Curvature distribution',
-        'Power spectrum',
+        'Power spectral density',
         'Autocorrelation',
         'Variable bandwidth',
         'Scale-dependent slope',

@@ -104,16 +104,15 @@ def test_slope_distribution_simple_line_scan():
     assert result["xunit"] == "1"
     assert result["yunit"] == "1"
 
-    assert len(result["series"]) == 2
+    # The slope is constant (-2), so its standard deviation is zero and no
+    # Gaussian-fit series is produced (only the histogram).
+    assert len(result["series"]) == 1
 
     exp_bins = np.array([-2 - 1 / 1500, -2, -2 + 1 / 1500])  # for slopes
     exp_slope_dist_values = [0, 1500, 0]  # integral with dx=1/3 results to 1
     series0 = result["series"][0]
     np.testing.assert_almost_equal(series0["x"], exp_bins)
     np.testing.assert_almost_equal(series0["y"], exp_slope_dist_values)
-
-    # not testing gauss values yet since number of points is unknown
-    # proposal: use a well tested function instead of own formula
 
 
 def test_curvature_distribution_simple_line_scan():
@@ -306,11 +305,14 @@ def test_slope_distribution_simple_2d_topography(simple_linear_2d_topography):
     assert result["xunit"] == "1"
     assert result["yunit"] == "1"
 
-    assert len(result["series"]) == 4
+    # Both the x- and y-direction slopes are constant (0 and -2), so their
+    # standard deviation is zero and no Gaussian-fit series is produced -- only
+    # the two histogram series remain.
+    assert len(result["series"]) == 2
 
     exp_bins_x = np.array([-1.0 / 1500, 0, 1.0 / 1500])  # for slopes
     exp_slope_dist_values_x = [0, 1500, 0]
-    series0, series1, series2, series3 = result["series"]
+    series0, series1 = result["series"]
 
     assert series0["name"] == "Slope distribution (x direction)"
 
@@ -320,16 +322,10 @@ def test_slope_distribution_simple_2d_topography(simple_linear_2d_topography):
     exp_bins_y = np.array([-2 - 1.0 / 1500, -2, -2 + 1.0 / 1500])  # for slopes
     exp_slope_dist_values_y = [0, 1500, 0]
 
-    assert series1["name"] == "Gaussian fit (x direction)"
+    assert series1["name"] == "Slope distribution (y direction)"
 
-    assert series2["name"] == "Slope distribution (y direction)"
-
-    np.testing.assert_almost_equal(series2["x"], exp_bins_y)
-    np.testing.assert_almost_equal(series2["y"], exp_slope_dist_values_y)
-
-    assert series3["name"] == "Gaussian fit (y direction)"
-    # TODO not testing gauss values yet since number of points is unknown
-    # proposal: use a well tested function instead of own formula
+    np.testing.assert_almost_equal(series1["x"], exp_bins_y)
+    np.testing.assert_almost_equal(series1["y"], exp_slope_dist_values_y)
 
 
 def test_curvature_distribution_simple_2d_topography(simple_linear_2d_topography):
@@ -355,9 +351,11 @@ def test_curvature_distribution_simple_2d_topography(simple_linear_2d_topography
     assert result["xunit"] == "{}⁻¹".format(unit)
     assert result["yunit"] == unit
 
-    assert len(result["series"]) == 2
+    # The curvature is constant (zero) for a linear topography, so its standard
+    # deviation is zero and no Gaussian-fit series is produced.
+    assert len(result["series"]) == 1
 
-    s0, s1 = result["series"]
+    s0 = result["series"][0]
 
     exp_bins = np.array([-1.0 / 1500, 0, 1.0 / 1500])  # for curvatures
     exp_curvature_dist_values = [0, 1500, 0]
@@ -366,9 +364,6 @@ def test_curvature_distribution_simple_2d_topography(simple_linear_2d_topography
 
     np.testing.assert_almost_equal(s0["x"], exp_bins)
     np.testing.assert_almost_equal(s0["y"], exp_curvature_dist_values)
-
-    assert s1["name"] == "Gaussian fit"
-    # Not further testing gaussian here
 
 
 def test_curvature_distribution_simple_2d_topography_periodic():
