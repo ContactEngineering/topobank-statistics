@@ -2,6 +2,7 @@ from typing import Union
 
 import numpy as np
 from muTimer import Timer
+from scipy.special import erfcinv
 from SurfaceTopography.Container.Averaging import log_average
 from SurfaceTopography.Container.common import suggest_length_unit
 from SurfaceTopography.Container.ScaleDependentStatistics import \
@@ -166,6 +167,76 @@ def _histogram_with_reentrant_guard(arr, bins, quantity):
         raise
 
 
+def _chauvenet_outlier_mask(arr):
+    """Boolean mask of Chauvenet outliers in ``arr`` using a robust scale.
+
+    The scale is estimated from the median absolute deviation (MAD) rather than
+    the standard deviation, so the extreme values being detected do not inflate
+    the scale used to detect them (for the RMS slope this masking is precisely
+    the failure mode we guard against). A value is flagged when it lies more
+    than ``z_c`` robust standard deviations from the median, where
+    ``z_c = Phi^{-1}(1 - 1 / (4 N))`` is Chauvenet's criterion -- the deviation
+    beyond which fewer than half an observation is expected among ``N`` normal
+    samples (``~ sqrt(2 ln N)`` for large ``N``).
+
+    Returns
+    -------
+    mask : np.ndarray of bool
+        True for outliers. All-False when the data is too small (< 3 points) or
+        has a zero/non-finite robust scale (no outlier can be defined).
+    z_c : float
+        The threshold in robust standard deviations (NaN when not computed).
+    """
+    arr = np.asarray(arr)
+    n = arr.size
+    mask = np.zeros(n, dtype=bool)
+    if n < 3:
+        return mask, np.nan
+    median = np.median(arr)
+    # 1.4826 rescales the MAD to a standard-deviation estimate for normal data.
+    robust_sigma = 1.4826 * np.median(np.abs(arr - median))
+    if not np.isfinite(robust_sigma) or robust_sigma <= 0:
+        return mask, np.nan
+    # Chauvenet: flag when N * P(|Z| > z_c) < 1/2. With P(|Z| > z) = erfc(z/sqrt2)
+    # this gives z_c = sqrt(2) * erfcinv(1 / (2 N)).
+    z_c = np.sqrt(2) * erfcinv(1.0 / (2 * n))
+    mask = np.abs(arr - median) > z_c * robust_sigma
+    return mask, z_c
+
+
+def _slope_outlier_report(slopes, label, topography_name):
+    """Return ``(extra_scalars, alert)`` describing RMS-slope outliers.
+
+    ``slopes`` are the (unmasked) slope values for one direction. When
+    Chauvenet outliers are present, the trimmed RMS slope (computed with those
+    values removed) is reported alongside a warning; otherwise ``({}, None)`` is
+    returned so the RMS slope is presented without embellishment.
+    """
+    slopes = np.asarray(slopes)
+    mask, z_c = _chauvenet_outlier_mask(slopes)
+    n_outliers = int(np.count_nonzero(mask))
+    if n_outliers == 0:
+        return {}, None
+
+    rms_full = np.sqrt(np.mean(slopes**2))
+    inliers = slopes[~mask]
+    rms_trimmed = float(np.sqrt(np.mean(inliers**2))) if inliers.size else float("nan")
+
+    extra_scalars = {
+        f"RMS Slope, outliers excluded ({label})": dict(value=rms_trimmed, unit="1"),
+    }
+    message = (
+        f"{n_outliers} extreme local slope value(s) in the {label} exceed the "
+        f"Chauvenet outlier threshold (|slope - median| > {z_c:.1f} robust "
+        f"standard deviations). Such values often stem from overhangs or other "
+        f"reentrant/measurement artifacts and dominate the RMS slope, which "
+        f"drops from {rms_full:.3g} to {rms_trimmed:.3g} when they are excluded. "
+        f"Interpret the RMS slope in the {label} with care."
+    )
+    alert = make_alert_entry("warning", topography_name, "Slope distribution", message)
+    return extra_scalars, alert
+
+
 def _moments_histogram_gaussian(
     arr, bins, topography, wfac, quantity, label, unit, gaussian=True
 ):
@@ -261,6 +332,8 @@ class SlopeDistribution(WorkflowImplementation):
 
         scalars = {}
         series = []
+        alerts = []
+        topography_name = analysis.subject.name
         # .. will be completed below..
 
         if topography.dim == 2:
@@ -280,6 +353,12 @@ class SlopeDistribution(WorkflowImplementation):
             )
             scalars.update(scalars_slope_x)
             series.extend(series_slope_x)
+            extra_x, alert_x = _slope_outlier_report(
+                np.ma.compressed(dh_dx), "x direction", topography_name
+            )
+            scalars.update(extra_x)
+            if alert_x is not None:
+                alerts.append(alert_x)
 
             #
             # Results for y direction
@@ -295,6 +374,12 @@ class SlopeDistribution(WorkflowImplementation):
             )
             scalars.update(scalars_slope_y)
             series.extend(series_slope_y)
+            extra_y, alert_y = _slope_outlier_report(
+                np.ma.compressed(dh_dy), "y direction", topography_name
+            )
+            scalars.update(extra_y)
+            if alert_y is not None:
+                alerts.append(alert_y)
 
             #
             # Results for absolute gradient
@@ -322,6 +407,12 @@ class SlopeDistribution(WorkflowImplementation):
             )
             scalars.update(scalars_slope_x)
             series.extend(series_slope_x)
+            extra_x, alert_x = _slope_outlier_report(
+                np.ma.compressed(dh_dx), "x direction", topography_name
+            )
+            scalars.update(extra_x)
+            if alert_x is not None:
+                alerts.append(alert_x)
         else:
             raise ValueError(
                 "This analysis function can only handle 1D or 2D topographies."
@@ -335,6 +426,7 @@ class SlopeDistribution(WorkflowImplementation):
             yunit="1",
             scalars=scalars,
             series=wrap_series(series),
+            alerts=alerts,
         )
 
 
