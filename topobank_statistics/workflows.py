@@ -20,6 +20,10 @@ from topobank.manager.models import Surface, Topography
 APP_NAME = "topobank_statistics"
 VIZ_ROUGHNESS_PARAMETERS = "roughness-parameters"
 
+# Open-access reference paper (Röttger et al., Surf. Topogr.: Metrol. Prop. 10
+# (2022) 035032). Individual workflows link to the relevant section.
+CE_PAPER_URL = "https://iopscience.iop.org/article/10.1088/2051-672X/ac860a"
+
 GAUSSIAN_FIT_SERIES_NAME = "Gaussian fit"
 
 
@@ -27,6 +31,12 @@ class HeightDistribution(WorkflowImplementation):
     class Meta:
         name = "topobank_statistics.height_distribution"
         display_name = "Height distribution"
+        description = (
+            "Probability distribution of surface heights, shown with a Gaussian "
+            "fit. The RMS height summarizes the overall vertical roughness of the "
+            "measurement."
+        )
+        reference_url = f"{CE_PAPER_URL}#stmpac860as4-4"
 
         implementations = {
             Topography: "topography_implementation",
@@ -327,6 +337,12 @@ class SlopeDistribution(WorkflowImplementation):
     class Meta:
         name = "topobank_statistics.slope_distribution"
         display_name = "Slope distribution"
+        description = (
+            "Probability distribution of the local surface slope (the first "
+            "derivative of height), shown with a Gaussian fit. The RMS slope "
+            "reflects how steep the surface is."
+        )
+        reference_url = f"{CE_PAPER_URL}#stmpac860as4-4"
 
         implementations = {
             Topography: "topography_implementation",
@@ -455,6 +471,12 @@ class CurvatureDistribution(WorkflowImplementation):
     class Meta:
         name = "topobank_statistics.curvature_distribution"
         display_name = "Curvature distribution"
+        description = (
+            "Probability distribution of the local surface curvature (the second "
+            "derivative of height), shown with a Gaussian fit. The RMS curvature "
+            "reflects how sharply the surface bends."
+        )
+        reference_url = f"{CE_PAPER_URL}#stmpac860as4-4"
 
         implementations = {
             Topography: "topography_implementation",
@@ -542,6 +564,13 @@ class PowerSpectralDensity(WorkflowImplementation):
     class Meta:
         name = "topobank_statistics.power_spectral_density"
         display_name = "Power spectral density"
+        description = (
+            "Power-spectral density (PSD): how the surface roughness is "
+            "distributed across length scales, plotted against wavevector "
+            "(large wavevector = short wavelength). A key fingerprint of a "
+            "self-affine rough surface."
+        )
+        reference_url = f"{CE_PAPER_URL}#stmpac860as4-6"
 
         implementations = {
             Topography: "topography_implementation",
@@ -600,6 +629,12 @@ class Autocorrelation(WorkflowImplementation):
     class Meta:
         name = "topobank_statistics.autocorrelation"
         display_name = "Autocorrelation"
+        description = (
+            "Height-difference autocorrelation function (ACF): how the typical "
+            "height difference grows with lateral distance. This is the "
+            "real-space counterpart of the power-spectral density."
+        )
+        reference_url = f"{CE_PAPER_URL}#stmpac860as4-7"
 
         implementations = {
             Topography: "topography_implementation",
@@ -648,6 +683,12 @@ class VariableBandwidth(WorkflowImplementation):
     class Meta:
         name = "topobank_statistics.variable_bandwidth"
         display_name = "Variable bandwidth"
+        description = (
+            "RMS height measured over progressively larger portions of the "
+            "surface (by subdividing the measurement). Reveals how roughness "
+            "depends on the observation scale from a single measurement."
+        )
+        reference_url = f"{CE_PAPER_URL}#stmpac860as4-8"
 
         implementations = {
             Topography: "topography_implementation",
@@ -897,6 +938,12 @@ class ScaleDependentSlope(WorkflowImplementation):
     class Meta:
         name = "topobank_statistics.scale_dependent_slope"
         display_name = "Scale-dependent slope"
+        description = (
+            "RMS slope computed as a function of scale, showing how the apparent "
+            "steepness of the surface changes with the length scale at which you "
+            "probe it."
+        )
+        reference_url = f"{CE_PAPER_URL}#stmpac860as4-5"
 
         implementations = {
             Topography: "topography_implementation",
@@ -942,6 +989,12 @@ class ScaleDependentCurvature(WorkflowImplementation):
     class Meta:
         name = "topobank_statistics.scale_dependent_curvature"
         display_name = "Scale-dependent curvature"
+        description = (
+            "RMS curvature computed as a function of scale, showing how the "
+            "apparent sharpness of surface features changes with the length "
+            "scale at which you probe it."
+        )
+        reference_url = f"{CE_PAPER_URL}#stmpac860as4-5"
 
         implementations = {
             Topography: "topography_implementation",
@@ -988,6 +1041,13 @@ class RoughnessParameters(WorkflowImplementation):
         name = "topobank_statistics.roughness_parameters"
         display_name = "Roughness parameters"
         visualization_type = VIZ_ROUGHNESS_PARAMETERS
+        description = (
+            "Scalar roughness parameters (RMS height, slope and curvature) for "
+            "profiles (1D) and areas (2D), with their ISO/ASME symbols. These "
+            "values are specific to this measurement's bandwidth, not the whole "
+            "physical surface."
+        )
+        reference_url = f"{CE_PAPER_URL}#stmpac860as4-4"
 
         implementations = {
             Topography: "topography_implementation",
