@@ -156,3 +156,51 @@ def test_roughness_params_rounded(
     # assert b"0.9" in response.content
     # assert b"-1.5679" in response.content
     # assert b"NaN" in response.content
+
+
+@pytest.mark.urls("test_urls")
+@pytest.mark.django_db
+def test_roughness_card_triggers_missing_analysis(
+    api_rf, mocker, user_with_plugin, handle_usage_statistics, settings
+):
+    """Regression test: opening the card must trigger the analysis if it does
+    not exist yet, rather than reporting "no results for the selected
+    datasets" (parallel to the series and contact-mechanics card views)."""
+    settings.DELETE_EXISTING_FILES = True
+
+    def myfunc(*args, **kwargs):
+        return [
+            {
+                "quantity": "RMS Height",
+                "direction": None,
+                "from": "area (2D)",
+                "symbol": "Sq",
+                "value": np.float32(1.0),
+                "unit": "m",
+            }
+        ]
+
+    m = mocker.patch(
+        "topobank.analysis.models.Workflow.eval",
+        new_callable=mocker.PropertyMock,
+    )
+    m.return_value = myfunc
+
+    surf = SurfaceFactory(created_by=user_with_plugin)
+    topo = Topography2DFactory(size_x=1, size_y=1, surface=surf)
+
+    func = Workflow(name="topobank_statistics.roughness_parameters")
+    # Note: deliberately NO analysis is created up front.
+
+    request = api_rf.get(
+        f"/plugins/statistics/card/roughness-parameters/{func.name}",
+        {"workflow": func.name, "subjects": subjects_to_base64([topo])},
+    )
+    request.user = topo.surface.created_by
+    request.session = {}
+
+    response = roughness_parameters_card_view(request)
+    assert response.status_code == 200
+
+    # The missing analysis must have been triggered and hence be reported.
+    assert len(response.data["analyses"]) >= 1

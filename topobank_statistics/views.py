@@ -37,6 +37,12 @@ def roughness_parameters_card_view(request, **kwargs):
     controller = AnalysisController.from_request(request, **kwargs)
 
     #
+    # Trigger missing analyses (consistent with the series and contact-mechanics
+    # card views); otherwise datasets that were never analyzed report no results.
+    #
+    controller.trigger_missing_analyses()
+
+    #
     # Filter only successful ones
     #
     analyses_success = controller.get(['su'], True)
