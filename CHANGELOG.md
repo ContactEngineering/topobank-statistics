@@ -1,20 +1,20 @@
 # Changelog for plugin *topobank-statistics*
 
-## 1.8.0 (2026-07-31)
+## 1.8.0 (2026-08-02)
 
-- ENH: Warn about RMS-slope outliers and report the trimmed RMS slope, also in
-  the roughness parameter table (#35)
-- ENH: Robust histograms for height/slope/curvature distributions and Gaussian
-  fits based on the standard deviation
+- ENH: Warn about RMS-slope outliers and report the trimmed RMS slope, also in the
+  roughness parameter table (#35)
+- ENH: Robust histograms for height/slope/curvature distributions and Gaussian fits
+  based on the standard deviation (#30, #38)
 - ENH: Workflow descriptions for display in the user interface
+- ENH: Renamed the workflow "Power spectrum" to "Power spectral density" (#51)
 - BUG: Fixed triggering of analyses for roughness parameters
-- BUG: Fixed y-direction scale-dependent roughness and masking of the slope
-  histogram
+- BUG: Fixed y-direction scale-dependent roughness and masking of the slope histogram
 - BUG: Declare `visualization_type` on the `RoughnessParameters` workflow
 - BUG: Do not call the removed `Topography.get_absolute_url` in workflows
 - MAINT: Record per-step timing in workflows via the shared muTimer
-- MAINT: Updated for the split of the REST API from topobank and the removal of
-  the plugin architecture (including plugin permissions)
+- MAINT: Updated for the split of the REST API from topobank and the removal of the
+  plugin architecture (including plugin permissions)
 - MAINT: `analysis_function` -> `workflow`, `Folder` -> `ManifestSet`
 - MAINT: Removed trackstats and the backend conversion of downloadable artifacts
 - BUILD: Changed build system to hatchling
