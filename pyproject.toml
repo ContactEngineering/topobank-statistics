@@ -38,6 +38,7 @@ dev = [
     'pytest',
     'pytest-django>=4.4.0',
     'pytest-mock',
+    'pytest-cov',
     'factory-boy',
     'django-celery-results',
 ]
@@ -52,3 +53,7 @@ source = "vcs"
 
 [tool.hatch.metadata]
 allow-direct-references = true
+
+[tool.coverage.run]
+# Generated migration modules would dilute the coverage numbers
+omit = ["*/migrations/*"]

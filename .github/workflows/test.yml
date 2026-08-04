@@ -54,4 +54,20 @@ jobs:
           .[dev]
 
     - name: Test
-      run: pytest -s -v -rsx
+      run: pytest -s -v -rsx --cov=topobank_statistics --cov-report=term --cov-report=xml
+
+    - name: Publish coverage summary
+      if: always()
+      run: |
+        if [ -f .coverage ]; then
+          echo "## Code coverage" >> "$GITHUB_STEP_SUMMARY"
+          coverage report --format=markdown --sort=cover >> "$GITHUB_STEP_SUMMARY"
+        fi
+
+    - name: Upload coverage report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: coverage.xml
+        if-no-files-found: ignore
