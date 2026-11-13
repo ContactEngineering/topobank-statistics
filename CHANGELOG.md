@@ -1,116 +1,151 @@
 # Changelog for plugin *topobank-statistics*
 
-## 1.8.0 (2026-08-02)
+<!--
+Style for this changelog (keep to it so entries stay uniform):
 
-- ENH: Warn about RMS-slope outliers and report the trimmed RMS slope, also in the
-  roughness parameter table (#35)
-- ENH: Robust histograms for height/slope/curvature distributions and Gaussian fits
-  based on the standard deviation (#30, #38)
-- ENH: Workflow descriptions for display in the user interface
-- ENH: Renamed the workflow "Power spectrum" to "Power spectral density" (#51)
-- BUG: Fixed triggering of analyses for roughness parameters
-- BUG: Fixed y-direction scale-dependent roughness and masking of the slope histogram
-- BUG: Declare `visualization_type` on the `RoughnessParameters` workflow
-- BUG: Do not call the removed `Topography.get_absolute_url` in workflows
-- MAINT: Record per-step timing in workflows via the shared muTimer
-- MAINT: Updated for the split of the REST API from topobank and the removal of the
-  plugin architecture (including plugin permissions)
-- MAINT: `analysis_function` -> `workflow`, `Folder` -> `ManifestSet`
-- MAINT: Removed trackstats and the backend conversion of downloadable artifacts
+- Newest version first. Heading `vX.Y.Z (DDMonYY)`, underlined with dashes.
+  A version not yet released is headed `vX.Y.Z (not yet released)`.
+- One bullet per user-visible change, at most two lines (about 200
+  characters). Say what changed for the user and, if useful, why or by how
+  much. Omit internals: no function, class, file or variable names, no
+  environment variables, no commit or PR references.
+- Start every bullet with one of: `ENH:` (new feature), `BUG:` (fix),
+  `API:` (interface change), `PERF:` (speed or memory), `MAINT:`, `TST:`,
+  `DOC:`, `BUILD:`, `CI:`.
+- Small related fixes may share one bullet. No trailing period on bullets.
+-->
+
+v1.8.0 (02Aug26)
+----------------
+
+- ENH: The slope distribution warns about outliers in the RMS slope and reports
+  the RMS slope without them, as does the roughness parameter table
+- ENH: Robust histograms for height, slope and curvature distributions; their
+  Gaussian fits use the standard deviation about the mean
+- ENH: Workflows have descriptions for display in the user interface
+- ENH: Renamed the workflow "Power spectrum" to "Power spectral density"
+- BUG: Opening the roughness parameter card starts missing analyses instead of
+  reporting that there are no results
+- BUG: Fixed scale-dependent slope and curvature in y-direction, which repeated
+  the x-direction, and masked values distorting the slope histogram
+- BUG: Roughness parameters are shown in their dedicated card again instead of
+  the default plot card
+- BUG: Power spectrum, autocorrelation, variable bandwidth and scale-dependent
+  analyses no longer crash; their alerts name the measurement without a link
+- MAINT: Workflows record the time taken by each step
+- MAINT: Updated for the split of the REST API from topobank, the removal of the
+  plugin architecture and plugin permissions, and renamed analysis concepts
+- MAINT: Removed usage statistics tracking and the server-side conversion of
+  analysis results for download
 - BUILD: Changed build system to hatchling
 
-## 1.7.0 (2025-12-11)
+v1.7.0 (11Dec25)
+----------------
 
-- MAINT: Update for topobank 1.65.0
+- MAINT: Updated for topobank 1.65.0
 
-## 1.6.2 (2025-08-19)
+v1.6.2 (19Aug25)
+----------------
 
-- MAINT: Removed unused media root
+- MAINT: Removed an unused setting for local media storage
 
-## 1.6.1 (2025-03-17)
+v1.6.1 (17Mar25)
+----------------
 
 - MAINT: Moved all frontend code to ce-ui
 
-## 1.6.0 (2025-03-16)
+v1.6.0 (16Mar25)
+----------------
 
-- MAINT: Updates for API changes in topobank 1.57.1
-- MAINT: Moved rounding function form topobank to utils.py
-- MAINT: Fixed pint deprecation, closes #47
+- MAINT: Updated for API changes in topobank 1.57.1
+- MAINT: Fixed a deprecation warning from pint
 
-## 1.5.0 (2025-02-09)
+v1.5.0 (09Feb25)
+----------------
 
-- MAINT: Updates for API changes in topobank 1.55.0
+- MAINT: Updated for API changes in topobank 1.55.0
 
-## 1.4.0 (2024-11-13)
+v1.4.0 (13Nov24)
+----------------
 
-- MAINT: Updates for API changes in topobank 1.50.0
+- MAINT: Updated for API changes in topobank 1.50.0
 
-## 1.3.0 (2024-05-12)
+v1.3.0 (12May24)
+----------------
 
-- ENH: Use new `AnalysisCard` component
+- ENH: Results are shown in the new common analysis card
 
-## 1.2.4 (2024-03-22)
- 
-- BUG: Fixed version discovery
+v1.2.4 (22Mar24)
+----------------
 
-## 1.2.3 (2024-03-21)
+- BUG: Fixed detection of the package version
+
+v1.2.3 (21Mar24)
+----------------
 
 - BUILD: Changed build system to flit
 
-## 1.2.2 (2024-03-12)
+v1.2.2 (12Mar24)
+----------------
 
 - MAINT: Compatibility with topobank 1.7.0
 
-## 1.2.1 (2024-01-20)
+v1.2.1 (20Jan24)
+----------------
 
-- MAINT: Enforcing PEP-8 style
+- MAINT: Code follows PEP 8 style
 
-## 1.2.0 (2023-11-25)
+v1.2.0 (25Nov23)
+----------------
 
-- MAINT: Update to Bootstrap 5
+- MAINT: Updated to Bootstrap 5
 
-## 1.1.2 (2023-08-21)
+v1.1.2 (21Aug23)
+----------------
 
-- MAINT: More fixes to CSRF injection
+- MAINT: Further fixes to how the CSRF token is passed to requests
 
-## 1.1.1 (2023-08-04)
+v1.1.1 (04Aug23)
+----------------
 
-- MAINT: Unified CSRF injection
+- MAINT: Unified how the CSRF token is passed to requests
 
-## 1.1.0 (2023-06-11)
+v1.1.0 (11Jun23)
+----------------
 
-- ENH: Unified single page application for analyses, including rewritten
+- ENH: Unified single page application for analyses, including a rewritten
   task status
-- ENH: Webpack based bundling (for the analysis app)
-- ENH: Upgrade to Vue 3
-- MAINT: Easier to use download format for roughness parameters (#4)
+- ENH: The analysis app is bundled with Webpack
+- ENH: Upgraded to Vue 3
+- MAINT: Easier to use download format for roughness parameters
 
-## 1.0.2 (2023-04-06)
+v1.0.2 (06Apr23)
+----------------
 
-- BUG: Reverted to old contact mechanics card view
+- BUG: Reverted to the old way of choosing the card view for an analysis
 
-## 1.0.1 (2023-04-06)
+v1.0.1 (06Apr23)
+----------------
 
-- MAINT: Fixes to version discovery
+- MAINT: Fixes to the detection of the package version
 
-## 1.0.0 (2023-01-31)
+v1.0.0 (31Jan23)
+----------------
 
-- MAINT: Version discovery from VCS
+- MAINT: The package version is taken from version control
 
-## 0.92.1 (2022-12-07)
+v0.92.1 (07Dec22)
+-----------------
 
-- ENH: Made Tasks button more prominent as in
-  main application
+- ENH: Made the Tasks button more prominent, as in the main application
 - BUG: Fixed wrong template names
-- MAINT: In roughness parameters downloads, renamed
-  column "surface" to "digital surface twin" (#890)
-- MAINT: Removed explicit checks for reentrant 
-  topographies, now handled by SurfaceTopography
+- MAINT: The roughness parameter download names the column "digital surface
+  twin" instead of "surface"
+- MAINT: Reentrant measurements are no longer checked here; SurfaceTopography
+  reports analyses that do not support them
 
-## 0.92.0 (2022-10-14)
+v0.92.0 (14Oct22)
+-----------------
 
-This is the initial version of the plugin, based on
-the code and the functionality of the statistical
-functions in topobank 0.91.1.
-
-Now, as plugin, topobank >= 0.92.0 is needed for usage.
+- MAINT: Initial version of the plugin, based on the statistical functions
+  of topobank 0.91.1; requires topobank 0.92.0 or newer
